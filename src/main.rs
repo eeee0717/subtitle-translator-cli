@@ -5,7 +5,7 @@ fn main() {
         eprintln!("Problem parsing arguments: {}", err);
         std::process::exit(1);
     });
-    let translator = translate(&config);
+    let translated_text = translate(config);
 
-    println!("{:?}", config.file_name);
+    println!("{:?}", translated_text);
 }
