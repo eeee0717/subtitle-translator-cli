@@ -1,15 +1,16 @@
-use std::{error::Error, fs};
-
-use crate::config::Config;
 use rustlate;
+use std::error::Error;
 
-pub fn translate(config: Config) -> Result<String, Box<dyn Error>> {
-    let contents = fs::read_to_string(config.file_path)?;
+pub fn translate(
+    contents: String,
+    input_language: String,
+    output_language: String,
+) -> Result<String, Box<dyn Error>> {
+    // let contents: String = fs::read_to_string(config.file_path)?;
     let translator_struct = rustlate::Translator {
-        to: config.output_language.leak(),
-        from: config.input_language.leak(),
+        to: output_language.leak(),
+        from: input_language.leak(),
     };
     let translated_text = translator_struct.translate(contents.leak())?;
-
     Ok(translated_text)
 }
