@@ -143,4 +143,18 @@ mod tests {
         println!("{:?}", translated_text);
         println!("Time elapsed: {:?}", start.elapsed());
     }
+
+    #[test]
+    fn test_merge_contents() {
+        let contents = fs::read_to_string("test.srt").unwrap();
+        let contents = read_file_trim_bom(&contents);
+        let translated_contents = vec![
+            "Whoever controls the spice".to_string(),
+            "controls the universe".to_string(),
+            "Empire Diary 10191 Commentary Three".to_string(),
+            "Imperial diary, year 10191, third comment.".to_string(),
+        ];
+        let merged_contents = SrtFile {}.merge_contents(&contents, translated_contents);
+        println!("{:#?}", merged_contents);
+    }
 }

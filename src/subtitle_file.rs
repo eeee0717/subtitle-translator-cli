@@ -2,7 +2,7 @@ use std::error::Error;
 
 pub trait SubtitleFile {
     fn split_contents(&self, contents: &String) -> Result<Vec<String>, Box<dyn Error>>;
-    fn merge_contents(&self) -> String;
+    fn merge_contents(&self, contents: &String, translated_contents: Vec<String>) -> String;
 }
 
 pub struct SrtFile {}
@@ -19,10 +19,31 @@ impl SubtitleFile for SrtFile {
         Ok(extracted_strings)
     }
 
-    fn merge_contents(&self) -> String {
-        String::from("")
+    fn merge_contents(&self, contents: &String, translated_contents: Vec<String>) -> String {
+        let mut merged_contents = String::new();
+        let mut translated_contents = translated_contents.into_iter();
+        for line in contents.lines() {
+            if is_number(line) || is_timeline(line) || is_empty_line(line) {
+                merged_contents.push_str(format!("{}\n", line).as_str());
+                continue;
+            }
+
+            if let Some(translated_line) = translated_contents.next() {
+                merged_contents.push_str(format!("{}\n", translated_line).as_str());
+            } else {
+                println!(
+                    "Warning: Not enough translated content for all lines in original contents\r\n"
+                );
+                break;
+            }
+        }
+        merged_contents
     }
 }
+
+// fn insert_translated_contents(contents:&String, )->String{
+
+// }
 
 fn extract_contents(segments: &[&str]) -> Vec<String> {
     let mut extracted_contents = Vec::new();

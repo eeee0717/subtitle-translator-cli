@@ -1,25 +1,18 @@
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
-// processor.rs
 use crate::{SrtFile, SubtitleFile};
+use core::time;
 use std::error::Error;
-use std::fs;
+use std::fs::{self, File};
+use std::io::Write;
 use std::sync::{Arc, Mutex};
-
-fn read_file_trim_bom(contents: &str) -> String {
-    let bom = "\u{FEFF}";
-    if contents.starts_with(bom) {
-        contents[bom.len()..].to_string()
-    } else {
-        contents.to_string()
-    }
-}
+use std::thread;
 
 pub fn process_file(
     file_path: String,
     input_language: String,
     output_language: String,
-) -> Result<Vec<String>, Box<dyn Error>> {
+) -> Result<String, Box<dyn Error>> {
     let contents = fs::read_to_string(&file_path).expect("Something went wrong reading the file");
     let contents = read_file_trim_bom(&contents);
     let file_extension = file_path.split('.').last().unwrap_or("");
@@ -32,7 +25,19 @@ pub fn process_file(
     let split_contents = file_struct.split_contents(&contents).unwrap();
     let translated_combined_text =
         run_translation_tasks(split_contents, input_language, output_language);
-    Ok(translated_combined_text)
+    let merged_contents = file_struct.merge_contents(&contents, translated_combined_text);
+    let mut file = File::create("output.srt")?;
+    file.write_all(merged_contents.as_bytes())?;
+    Ok(merged_contents)
+}
+
+pub fn read_file_trim_bom(contents: &str) -> String {
+    let bom = "\u{FEFF}";
+    if contents.starts_with(bom) {
+        contents[bom.len()..].to_string()
+    } else {
+        contents.to_string()
+    }
 }
 
 fn run_translation_tasks(
@@ -74,6 +79,7 @@ fn spawn_translation_threads(
                 .lock()
                 .expect("Failed to acquire lock");
             translated_combined_text.push((index, translated_text));
+            thread::sleep(time::Duration::from_millis(200));
         });
 }
 

@@ -11,7 +11,7 @@ fn main() {
         config.input_language,
         config.output_language,
     ) {
-        Ok(translated_text) => println!("{:?}", translated_text),
+        Ok(_) => println!("Finished"),
         Err(e) => eprintln!("Translation error: {}", e),
     }
 }
