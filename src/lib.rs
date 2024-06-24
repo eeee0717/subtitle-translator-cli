@@ -59,6 +59,9 @@ mod tests {
             "谁拥有香料".to_string(),
             "谁就拥有世界".to_string(),
             "帝国日记 10191年 评论三".to_string(),
+            "帝国日记 10191年 评论三".to_string(),
+            "帝国日记 10191年 评论三".to_string(),
+            "帝国日记 10191年 评论三".to_string(),
         ];
         let mut translated_combined_text = Vec::new();
         for contents in split_contents {
@@ -74,17 +77,20 @@ mod tests {
     fn test_multi_thread() {
         let start = Instant::now();
         let split_contents = vec![
-            "谁拥有香料".to_string(),
-            "谁就拥有世界".to_string(),
-            "帝国日记 10191年 评论三".to_string(),
+            "1 谁拥有香料".to_string(),
+            "2 谁就拥有世界".to_string(),
+            "3 谁就拥有世界".to_string(),
+            "4 谁就拥有世界".to_string(),
+            "5 谁就拥有世界".to_string(),
+            "6 谁就拥有世界".to_string(),
         ];
-        let translated_combined_text = Arc::new(Mutex::new(Vec::new()));
+        let translated_combined_text =
+            Arc::new(Mutex::new(Vec::with_capacity(split_contents.len())));
         let mut handles = vec![];
 
-        for content in split_contents {
+        for (index, content) in split_contents.into_iter().enumerate() {
             // 克隆 Arc 给每个线程
             let translated_combined_text = Arc::clone(&translated_combined_text);
-
             let handle = thread::spawn(move || {
                 let translated_text = translate(content, "zh-CN".to_string(), "en".to_string())
                     .expect("Translation failed");
@@ -92,7 +98,7 @@ mod tests {
                 let mut translated_combined_text = translated_combined_text
                     .lock()
                     .expect("Failed to acquire lock");
-                translated_combined_text.push(translated_text);
+                translated_combined_text.push((index, translated_text));
             });
 
             handles.push(handle);
@@ -101,12 +107,40 @@ mod tests {
             handle.join().expect("Thread failed");
         }
 
-        let translated_combined_text = Arc::try_unwrap(translated_combined_text)
+        let mut translated_combined_text = Arc::try_unwrap(translated_combined_text)
             .expect("Arc unwrap failed")
             .into_inner()
             .expect("Failed to acquire lock");
 
-        println!("{:?}", translated_combined_text);
+        // 按照索引排序以恢复原始顺序
+        translated_combined_text.sort_by_key(|k| k.0);
+
+        // 提取翻译后的文本
+        let translated_combined_text: Vec<String> = translated_combined_text
+            .into_iter()
+            .map(|(_, text)| text)
+            .collect();
+
+        println!("{:#?}", translated_combined_text);
+        println!("Time elapsed: {:?}", start.elapsed());
+    }
+
+    #[test]
+    fn test_process_file() {
+        let config = Config {
+            file_path: "test.srt".to_string(),
+            file_name: "test.srt".to_string(),
+            input_language: "auto".to_string(),
+            output_language: "en".to_string(),
+        };
+        let start = Instant::now();
+        let translated_text = process_file(
+            config.file_path,
+            config.input_language,
+            config.output_language,
+        )
+        .unwrap();
+        println!("{:?}", translated_text);
         println!("Time elapsed: {:?}", start.elapsed());
     }
 }
