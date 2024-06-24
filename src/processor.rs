@@ -1,3 +1,4 @@
+use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 use crate::{SrtFile, SubtitleFile};
@@ -61,13 +62,11 @@ fn run_translation_tasks(
     output_language: String,
 ) -> Vec<String> {
     let translated_combined_text = Arc::new(Mutex::new(Vec::with_capacity(contents.len())));
-    let progress = Arc::new(Mutex::new(0));
     spawn_translation_threads(
         contents,
         input_language,
         output_language,
         translated_combined_text.clone(),
-        progress,
     );
 
     let mut translated_combined_text = Arc::try_unwrap(translated_combined_text)
@@ -83,10 +82,17 @@ fn spawn_translation_threads(
     input_language: String,
     output_language: String,
     translated_combined_text: Arc<Mutex<Vec<(usize, String)>>>,
-    progress: Arc<Mutex<usize>>, // 新增进度追踪变量
 ) {
+    let progress = Arc::new(Mutex::new(0));
     let total = contents.len(); // 总任务数
-
+    let pb = ProgressBar::new(total as u64);
+    pb.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {percent}%",
+        )
+        .unwrap()
+        .progress_chars("#>-"),
+    );
     contents
         .into_par_iter()
         .enumerate()
@@ -104,12 +110,13 @@ fn spawn_translation_threads(
             {
                 let mut progress = progress.lock().expect("Failed to acquire lock");
                 *progress += 1;
-                println!("Progress: {}/{}", *progress, total); // 输出当前进度
+                pb.set_position(*progress);
                 if *progress % 5 == 0 {
                     thread::sleep(time::Duration::from_millis(500));
                 }
             }
         });
+    pb.finish_with_message("finished");
 }
 
 fn sort_and_extract_translations(
