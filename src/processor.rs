@@ -46,12 +46,13 @@ fn run_translation_tasks(
     output_language: String,
 ) -> Vec<String> {
     let translated_combined_text = Arc::new(Mutex::new(Vec::with_capacity(contents.len())));
-
+    let progress = Arc::new(Mutex::new(0));
     spawn_translation_threads(
         contents,
         input_language,
         output_language,
         translated_combined_text.clone(),
+        progress,
     );
 
     let mut translated_combined_text = Arc::try_unwrap(translated_combined_text)
@@ -67,7 +68,10 @@ fn spawn_translation_threads(
     input_language: String,
     output_language: String,
     translated_combined_text: Arc<Mutex<Vec<(usize, String)>>>,
+    progress: Arc<Mutex<usize>>, // 新增进度追踪变量
 ) {
+    let total = contents.len(); // 总任务数
+
     contents
         .into_par_iter()
         .enumerate()
@@ -75,11 +79,21 @@ fn spawn_translation_threads(
             let translated_text =
                 crate::translate(content, input_language.clone(), output_language.clone())
                     .expect("Translation failed");
-            let mut translated_combined_text = translated_combined_text
-                .lock()
-                .expect("Failed to acquire lock");
-            translated_combined_text.push((index, translated_text));
-            thread::sleep(time::Duration::from_millis(200));
+            {
+                let mut translated_combined_text = translated_combined_text
+                    .lock()
+                    .expect("Failed to acquire lock");
+                translated_combined_text.push((index, translated_text));
+            }
+
+            {
+                let mut progress = progress.lock().expect("Failed to acquire lock");
+                *progress += 1;
+                println!("Progress: {}/{}", *progress, total); // 输出当前进度
+                if *progress % 5 == 0 {
+                    thread::sleep(time::Duration::from_millis(500));
+                }
+            }
         });
 }
 
