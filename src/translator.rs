@@ -6,7 +6,6 @@ pub fn translate(
     input_language: String,
     output_language: String,
 ) -> Result<String, Box<dyn Error>> {
-    // let contents: String = fs::read_to_string(config.file_path)?;
     let translator_struct = rustlate::Translator {
         to: output_language.leak(),
         from: input_language.leak(),

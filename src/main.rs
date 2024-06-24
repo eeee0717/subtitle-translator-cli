@@ -1,16 +1,10 @@
-use subtitle_translator_cli::{process_file, Config};
+use clap::Parser;
+use subtitle_translator_cli::{process_file, Args};
 
 fn main() {
-    let config = Config::build(std::env::args()).unwrap_or_else(|err| {
-        eprintln!("Problem parsing arguments: {}", err);
-        std::process::exit(1);
-    });
+    let args = Args::parse();
 
-    match process_file(
-        config.file_path,
-        config.input_language,
-        config.output_language,
-    ) {
+    match process_file(args.path, args.source_language, args.target_language) {
         Ok(_) => println!("Finished"),
         Err(e) => eprintln!("Translation error: {}", e),
     }

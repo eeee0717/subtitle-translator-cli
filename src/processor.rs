@@ -15,6 +15,7 @@ pub fn process_file(
 ) -> Result<String, Box<dyn Error>> {
     let contents = fs::read_to_string(&file_path).expect("Something went wrong reading the file");
     let contents = read_file_trim_bom(&contents);
+    let file_name = file_path.split('.').next().unwrap_or("");
     let file_extension = file_path.split('.').last().unwrap_or("");
 
     let file_struct = match file_extension {
@@ -23,10 +24,24 @@ pub fn process_file(
     };
 
     let split_contents = file_struct.split_contents(&contents).unwrap();
-    let translated_combined_text =
-        run_translation_tasks(split_contents, input_language, output_language);
-    let merged_contents = file_struct.merge_contents(&contents, translated_combined_text);
-    let mut file = File::create("output.srt")?;
+
+    let translated_combined_text = run_translation_tasks(
+        split_contents,
+        input_language.clone(),
+        output_language.clone(),
+    );
+
+    let merged_contents = file_struct
+        .merge_contents(&contents, translated_combined_text)
+        .unwrap();
+
+    let mut file = File::create(format!(
+        "{}_{}.{}",
+        file_name,
+        output_language.clone(),
+        file_extension
+    ))?;
+
     file.write_all(merged_contents.as_bytes())?;
     Ok(merged_contents)
 }
