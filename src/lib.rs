@@ -15,7 +15,6 @@ pub use processor::*;
 
 #[cfg(test)]
 mod tests {
-    use regex::Regex;
 
     use super::*;
     use std::{
@@ -34,20 +33,22 @@ mod tests {
         };
         let contents = fs::read_to_string(&config.file_path).unwrap();
 
-        let translated_text =
-            translate(contents, config.input_language, config.output_language).unwrap();
+        let translated_text = translate(contents, config.input_language, config.output_language);
         println!("{:?}", translated_text);
     }
 
     #[test]
-    fn test_regex() {
-        let contents = fs::read_to_string("test.srt").unwrap();
-        let re = Regex::new(
-            r"\d+\r\n\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\r\n.*(?:\n.*)?",
-        )
-        .unwrap();
-        let segments: Vec<&str> = re.find_iter(&contents).map(|cap| cap.as_str()).collect();
-        println!("{:?}", segments.len());
+    fn test_without_vpn() {
+        let config = Config {
+            file_path: "TEST.txt".to_string(),
+            file_name: "TEST.txt".to_string(),
+            input_language: "auto".to_string(),
+            output_language: "zh-CN".to_string(),
+        };
+        let contents = fs::read_to_string(&config.file_path).unwrap();
+
+        let translated_text = translate(contents, config.input_language, config.output_language);
+        println!("{:?}", translated_text);
     }
     #[test]
     fn test_split() {
@@ -68,8 +69,7 @@ mod tests {
         ];
         let mut translated_combined_text = Vec::new();
         for contents in split_contents {
-            let translated_text = translate(contents, "zh-CN".to_string(), "en".to_string())
-                .expect("Translation failed");
+            let translated_text = translate(contents, "zh-CN".to_string(), "en".to_string());
             translated_combined_text.push(translated_text);
         }
         println!("{:?}", translated_combined_text);
@@ -95,8 +95,7 @@ mod tests {
             // 克隆 Arc 给每个线程
             let translated_combined_text = Arc::clone(&translated_combined_text);
             let handle = thread::spawn(move || {
-                let translated_text = translate(content, "zh-CN".to_string(), "en".to_string())
-                    .expect("Translation failed");
+                let translated_text = translate(content, "zh-CN".to_string(), "en".to_string());
                 // 将翻译结果安全地推入向量
                 let mut translated_combined_text = translated_combined_text
                     .lock()

@@ -1,4 +1,4 @@
-use indicatif::{ProgressBar, ProgressState, ProgressStyle};
+use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 
 use crate::{SrtFile, SubtitleFile};
@@ -85,21 +85,17 @@ fn spawn_translation_threads(
 ) {
     let progress = Arc::new(Mutex::new(0));
     let total = contents.len(); // 总任务数
-    let pb = ProgressBar::new(total as u64);
-    pb.set_style(
-        ProgressStyle::with_template(
-            "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {percent}%",
-        )
-        .unwrap()
-        .progress_chars("#>-"),
-    );
+    let pb = pb_init(total as u64);
     contents
         .into_par_iter()
         .enumerate()
         .for_each(|(index, content)| {
-            let translated_text =
-                crate::translate(content, input_language.clone(), output_language.clone())
-                    .expect("Translation failed");
+            let translated_text = crate::translate(
+                content.clone(),
+                input_language.clone(),
+                output_language.clone(),
+            );
+
             {
                 let mut translated_combined_text = translated_combined_text
                     .lock()
@@ -112,7 +108,7 @@ fn spawn_translation_threads(
                 *progress += 1;
                 pb.set_position(*progress);
                 if *progress % 5 == 0 {
-                    thread::sleep(time::Duration::from_millis(500));
+                    thread::sleep(time::Duration::from_millis(1000));
                 }
             }
         });
@@ -128,4 +124,16 @@ fn sort_and_extract_translations(
         .into_iter()
         .map(|(_, text)| text.to_owned())
         .collect()
+}
+
+fn pb_init(total: u64) -> ProgressBar {
+    let pb = ProgressBar::new(total);
+    pb.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {percent}%",
+        )
+        .unwrap()
+        .progress_chars("#>-"),
+    );
+    pb
 }
