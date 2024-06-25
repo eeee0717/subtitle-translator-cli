@@ -86,6 +86,7 @@ fn spawn_translation_threads(
     let progress = Arc::new(Mutex::new(0));
     let total = contents.len(); // 总任务数
     let pb = pb_init(total as u64);
+
     contents
         .into_par_iter()
         .enumerate()
@@ -108,7 +109,7 @@ fn spawn_translation_threads(
                 *progress += 1;
                 pb.set_position(*progress);
                 if *progress % 5 == 0 {
-                    thread::sleep(time::Duration::from_millis(1000));
+                    thread::sleep(time::Duration::from_millis(200));
                 }
             }
         });
