@@ -13,6 +13,8 @@ pub use subtitle_file::*;
 mod processor;
 pub use processor::*;
 
+mod utils;
+pub use utils::*;
 #[cfg(test)]
 mod tests {
 
@@ -158,5 +160,14 @@ mod tests {
         ];
         let merged_contents = SrtFile {}.merge_contents(&contents, translated_contents);
         println!("{:#?}", merged_contents);
+    }
+
+    #[test]
+    fn test_get_all_srt_files() {
+        let srt_files = get_all_files("*.txt").unwrap();
+
+        for file in srt_files {
+            println!("{:?}", file);
+        }
     }
 }
