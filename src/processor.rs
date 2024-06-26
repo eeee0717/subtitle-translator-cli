@@ -20,15 +20,22 @@ pub fn process_file(
     let mut files = Vec::new();
     if file_path.contains("*") {
         files = get_all_files(file_path.as_str()).unwrap();
+    } else {
+        files.push(std::path::PathBuf::from(file_path));
     }
     for file in files {
-        process_single_file(file, input_language, output_language);
+        process_single_file(
+            file.to_str().unwrap(),
+            input_language.clone(),
+            output_language.clone(),
+        )
+        .unwrap();
     }
     Ok(())
 }
 
 fn process_single_file(
-    file_path: String,
+    file_path: &str,
     input_language: String,
     output_language: String,
 ) -> Result<(), Box<dyn Error>> {
