@@ -43,7 +43,7 @@ impl SubtitleFile for SrtFile {
                     merged_contents.push_str(format!("{}\n", translated_line).as_str());
                 }
                 None => {
-                    return Err("Translated content is shorter than original content".into());
+                    merged_contents.push_str(format!("{}\n", line).as_str());
                 }
             }
         }
