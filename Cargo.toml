@@ -2,6 +2,14 @@
 name = "subtitle-translator-cli"
 version = "0.1.0"
 edition = "2021"
+authors = ["eeee"]
+license = "MIT"
+description = "A tool to translate subtitle files"
+readme = "README.md"
+homepage = "https://github.com/eeee0717/subtitle-translator-cli"
+repository = "https://github.com/eeee0717/subtitle-translator-cli"
+keywords = ["cli", "subtitle", "translator"]
+categories = ["command-line-utilities"]
 
 [[bin]]
 name = "stc"
