@@ -2,7 +2,7 @@
 name = "subtitle-translator-cli"
 version = "0.1.0"
 edition = "2021"
-authors = ["eeee"]
+authors = ["Chen Tao<chentao020717Work@outlook.com>"]
 license = "MIT"
 description = "A tool to translate subtitle files"
 readme = "README.md"
