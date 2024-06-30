@@ -4,5 +4,6 @@ This is a simple CLI tools to translate subtitle files.
 
 ## Usage
 ```bash
-./stc -p <path> -sl <source-language> -tl <target-language>
+cargo install subtitle-translator-cli
+stc -p <path> -sl <source-language> -tl <target-language>
 ```
