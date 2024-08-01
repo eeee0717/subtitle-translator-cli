@@ -15,6 +15,9 @@ pub use processor::*;
 
 mod utils;
 pub use utils::*;
+
+mod openai;
+pub use openai::*;
 #[cfg(test)]
 mod tests {
 
