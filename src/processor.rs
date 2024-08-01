@@ -49,26 +49,31 @@ fn process_single_file(
         _ => return Err("Unsupported file type".into()),
     };
 
-    let split_contents = file_struct.split_contents(&contents).unwrap();
+    let (number_info, time_info, text_info) = file_struct.extract_information(&contents).unwrap();
 
-    let translated_combined_text = run_translation_tasks(
-        split_contents,
-        input_language.clone(),
-        output_language.clone(),
-    );
+    println!("{:?}", number_info.len());
+    println!("{:?}", time_info.len());
+    println!("{:?}", text_info.len());
+    // let split_contents = file_struct.split_contents(&contents).unwrap();
 
-    let merged_contents = file_struct
-        .merge_contents(&contents, translated_combined_text)
-        .unwrap();
+    // let translated_combined_text = run_translation_tasks(
+    //     split_contents,
+    //     input_language.clone(),
+    //     output_language.clone(),
+    // );
 
-    let mut file = File::create(format!(
-        "{}_{}.{}",
-        file_name,
-        output_language.clone(),
-        file_extension
-    ))?;
+    // let merged_contents = file_struct
+    //     .merge_contents(&contents, translated_combined_text)
+    //     .unwrap();
 
-    file.write_all(merged_contents.as_bytes())?;
+    // let mut file = File::create(format!(
+    //     "{}_{}.{}",
+    //     file_name,
+    //     output_language.clone(),
+    //     file_extension
+    // ))?;
+
+    // file.write_all(merged_contents.as_bytes())?;
     Ok(())
 }
 

@@ -1,6 +1,12 @@
 use std::error::Error;
 
+use regex::Regex;
+
 pub trait SubtitleFile {
+    fn extract_information(
+        &self,
+        contents: &String,
+    ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>>;
     fn split_contents(&self, contents: &String) -> Result<Vec<String>, Box<dyn Error>>;
     fn merge_contents(
         &self,
@@ -12,6 +18,42 @@ pub trait SubtitleFile {
 pub struct SrtFile {}
 
 impl SubtitleFile for SrtFile {
+    fn extract_information(
+        &self,
+        contents: &String,
+    ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>> {
+        let lines = contents.split("\r\n").collect::<Vec<&str>>();
+        let time_pattern =
+            Regex::new(r"\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}").unwrap();
+        let number_pattern = Regex::new(r"^\d+$").unwrap();
+        let mut number_info: Vec<String> = vec![];
+        let mut time_info: Vec<String> = vec![];
+        let mut text_info: Vec<String> = vec![];
+        let mut current_text: Vec<String> = vec![];
+
+        for line in lines {
+            let line = line.trim();
+            if number_pattern.is_match(line) {
+                number_info.push(line.to_string());
+            } else if time_pattern.is_match(line) {
+                time_info.push(line.to_string());
+                if current_text.len() > 0 {
+                    text_info.push(current_text.join("\n"));
+                    current_text = vec![];
+                }
+            } else if line == String::from("") {
+                continue;
+            } else {
+                current_text.push(line.to_string());
+            }
+        }
+        if current_text.len() > 0 {
+            text_info.push(current_text.join("\n"));
+        }
+
+        Ok((number_info, time_info, text_info))
+    }
+
     fn split_contents(&self, contents: &String) -> Result<Vec<String>, Box<dyn Error>> {
         let segments = contents.split("\r\n").collect::<Vec<&str>>();
         let extracted_contents = extract_contents(&segments);

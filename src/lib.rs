@@ -18,6 +18,8 @@ pub use utils::*;
 #[cfg(test)]
 mod tests {
 
+    use regex::Regex;
+
     use super::*;
     use std::{fs, time::Instant};
     #[test]
@@ -37,7 +39,7 @@ mod tests {
     #[test]
     fn test_process_files() {
         let config = Config {
-            file_path: "test.srt".to_string(),
+            file_path: "test3.srt".to_string(),
             file_name: "//".to_string(),
             input_language: "auto".to_string(),
             output_language: "en".to_string(),
@@ -51,5 +53,13 @@ mod tests {
         .unwrap();
         println!("{:?}", translated_text);
         println!("Time elapsed: {:?}", start.elapsed());
+    }
+
+    #[test]
+    fn test_regex() {
+        // 匹配数字
+        let re = Regex::new(r"^\d+$").unwrap();
+        let hay = "123";
+        assert!(re.is_match(hay));
     }
 }
