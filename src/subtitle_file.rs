@@ -5,9 +5,14 @@ use regex::Regex;
 pub trait SubtitleFile {
     fn extract_information(
         &self,
-        contents: &String,
+        text: &String,
     ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>>;
-    fn split_contents(&self, contents: &String) -> Result<Vec<String>, Box<dyn Error>>;
+    fn split_text(&self, text_info: Vec<String>) -> Result<Vec<String>, Box<dyn Error>>;
+    fn format_text(
+        &self,
+        source_text_chunks: Vec<String>,
+        i: usize,
+    ) -> Result<(String, String), Box<dyn Error>>;
     fn merge_contents(
         &self,
         contents: &String,
@@ -20,9 +25,9 @@ pub struct SrtFile {}
 impl SubtitleFile for SrtFile {
     fn extract_information(
         &self,
-        contents: &String,
+        text: &String,
     ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>> {
-        let lines = contents.split("\r\n").collect::<Vec<&str>>();
+        let lines = text.split("\r\n").collect::<Vec<&str>>();
         let time_pattern =
             Regex::new(r"\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}").unwrap();
         let number_pattern = Regex::new(r"^\d+$").unwrap();
@@ -54,17 +59,30 @@ impl SubtitleFile for SrtFile {
         Ok((number_info, time_info, text_info))
     }
 
-    fn split_contents(&self, contents: &String) -> Result<Vec<String>, Box<dyn Error>> {
-        let segments = contents.split("\r\n").collect::<Vec<&str>>();
-        let extracted_contents = extract_contents(&segments);
+    fn split_text(&self, text_info: Vec<String>) -> Result<Vec<String>, Box<dyn Error>> {
+        let group_size = 20;
+        let delimiter = "<T>";
+        let mut result: Vec<String> = vec![];
+        for i in (0..text_info.len()).step_by(group_size) {
+            let end = std::cmp::min(i + group_size, text_info.len());
+            result.push(text_info[i..end].join(delimiter));
+        }
 
-        let extracted_strings: Vec<String> = extracted_contents
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect();
-        Ok(extracted_strings)
+        Ok(result)
     }
 
+    fn format_text(
+        &self,
+        source_text_chunks: Vec<String>,
+        i: usize,
+    ) -> Result<(String, String), Box<dyn Error>> {
+        let before = source_text_chunks[0..i].join("");
+        let current = format!("<TRANSLATE_THIS>{}</TRANSLATE_THIS>", source_text_chunks[i]);
+        let after = source_text_chunks[i + 1..].join("");
+        let tagged_text = format!("{}{}{}", before, current, after);
+
+        Ok((tagged_text, source_text_chunks[i].clone()))
+    }
     fn merge_contents(
         &self,
         contents: &String,

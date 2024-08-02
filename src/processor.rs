@@ -39,8 +39,8 @@ fn process_single_file(
     input_language: String,
     output_language: String,
 ) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(&file_path).expect("Something went wrong reading the file");
-    let contents = read_file_trim_bom(&contents);
+    let text = fs::read_to_string(&file_path).expect("Something went wrong reading the file");
+    let text = read_file_trim_bom(&text);
     let file_name = file_path.split('.').next().unwrap_or("");
     let file_extension = file_path.split('.').last().unwrap_or("");
 
@@ -49,12 +49,16 @@ fn process_single_file(
         _ => return Err("Unsupported file type".into()),
     };
 
-    let (number_info, time_info, text_info) = file_struct.extract_information(&contents).unwrap();
+    let (number_info, time_info, text_info) = file_struct.extract_information(&text).unwrap();
 
-    println!("{:?}", number_info.len());
-    println!("{:?}", time_info.len());
-    println!("{:?}", text_info.len());
-    // let split_contents = file_struct.split_contents(&contents).unwrap();
+    // println!("{:?}", number_info.len());
+    // println!("{:?}", time_info.len());
+    // println!("{:?}", text_info.len());
+    let split_text = file_struct.split_text(text_info).unwrap();
+    // println!("{:?}", split_text.len());
+
+    let format_text = file_struct.format_text(split_text, 1).unwrap();
+    println!("{:?}", format_text.0);
 
     // let translated_combined_text = run_translation_tasks(
     //     split_contents,
