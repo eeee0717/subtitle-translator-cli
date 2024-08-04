@@ -1,13 +1,64 @@
 {
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(OSX) Launch",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceRoot}/target/debug/stc",
+            "name": "Debug unit tests in library 'subtitle_translator_cli'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=subtitle-translator-cli"
+                ],
+                "filter": {
+                    "name": "subtitle_translator_cli",
+                    "kind": "lib"
+                }
+            },
             "args": [],
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'stc'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=stc",
+                    "--package=subtitle-translator-cli"
+                ],
+                "filter": {
+                    "name": "stc",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'stc'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=stc",
+                    "--package=subtitle-translator-cli"
+                ],
+                "filter": {
+                    "name": "stc",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
