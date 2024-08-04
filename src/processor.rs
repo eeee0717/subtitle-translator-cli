@@ -49,17 +49,52 @@ fn process_single_file(
         _ => return Err("Unsupported file type".into()),
     };
 
-    let (number_info, time_info, text_info) = file_struct.extract_information(&text).unwrap();
-
+    let (number_info, time_info, text_info) = file_struct.extract_information(text).unwrap();
     // println!("{:?}", number_info.len());
     // println!("{:?}", time_info.len());
     // println!("{:?}", text_info.len());
     let split_text = file_struct.split_text(text_info).unwrap();
     // println!("{:?}", split_text.len());
 
+<<<<<<< HEAD
     let format_text = file_struct.format_text(split_text, 1).unwrap();
     println!("{:?}", format_text.0);
 
+=======
+    let (tagged_text, chunk_to_translate) = file_struct.format_text(split_text.clone(), 0).unwrap();
+    // println!(
+    //     "tagged_text:{:?}\r\n
+    //     split_text:{:?}",
+    //     tagged_text, chunk_to_translate
+    // );
+
+    let system_prompt = create_system_prompt(source_language.clone(), target_language.clone());
+    let task_prompt = create_task_prompt(
+        source_language,
+        target_language,
+        tagged_text,
+        chunk_to_translate.clone(),
+    );
+    let response = openai_translate(system_prompt, task_prompt).await.unwrap();
+    let result = file_struct.split_translated_text(response).unwrap();
+
+    println!("第四轮翻译结果{:?}", result);
+
+    let srt_content = file_struct.merge_contents(
+        chunk_to_translate.clone(),
+        result.clone(),
+        time_info,
+        0,
+        number_info,
+    );
+    println!("srt_content:{:?}", srt_content);
+
+    let (is_end, i) = file_struct
+        .check_translation_completion(split_text, chunk_to_translate)
+        .unwrap();
+
+    println!("is_end:{:?}, i:{:?}", is_end, i);
+>>>>>>> 3f41bee (feat: check translation completed)
     // let translated_combined_text = run_translation_tasks(
     //     split_contents,
     //     input_language.clone(),

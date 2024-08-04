@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn test_process_files() {
         let config = Config {
-            file_path: "test3.srt".to_string(),
+            file_path: "test4.srt".to_string(),
             file_name: "//".to_string(),
             input_language: "auto".to_string(),
             output_language: "en".to_string(),

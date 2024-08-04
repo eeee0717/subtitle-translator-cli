@@ -5,7 +5,7 @@ use regex::Regex;
 pub trait SubtitleFile {
     fn extract_information(
         &self,
-        text: &String,
+        text: String,
     ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>>;
     fn split_text(&self, text_info: Vec<String>) -> Result<Vec<String>, Box<dyn Error>>;
     fn format_text(
@@ -15,9 +15,12 @@ pub trait SubtitleFile {
     ) -> Result<(String, String), Box<dyn Error>>;
     fn merge_contents(
         &self,
-        contents: &String,
-        translated_contents: Vec<String>,
-    ) -> Result<String, Box<dyn Error>>;
+        chunk_to_translate: String,
+        result: String,
+        time_info: Vec<String>,
+        current_index: usize,
+        number_info: Vec<String>,
+    ) -> Result<(String, usize), Box<dyn Error>>;
 }
 
 pub struct SrtFile {}
@@ -25,11 +28,11 @@ pub struct SrtFile {}
 impl SubtitleFile for SrtFile {
     fn extract_information(
         &self,
-        text: &String,
+        text: String,
     ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>> {
         // split "\r\n" or "\n" to get lines
         let re: Regex = Regex::new(r"\r\n|\n").unwrap();
-        let lines: Vec<&str> = re.split(text).collect::<Vec<&str>>();
+        let lines: Vec<&str> = re.split(&text).collect::<Vec<&str>>();
         let time_pattern =
             Regex::new(r"\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}").unwrap();
         let number_pattern = Regex::new(r"^\d+$").unwrap();
@@ -57,6 +60,10 @@ impl SubtitleFile for SrtFile {
         if current_text.len() > 0 {
             text_info.push(current_text.join("\n"));
         }
+        println!("{:?}", number_info.len());
+        println!("{:?}", time_info.len());
+        println!("{:?}", text_info);
+        println!("***********");
 
         Ok((number_info, time_info, text_info))
     }
@@ -110,6 +117,24 @@ impl SubtitleFile for SrtFile {
             }
         }
         Ok(merged_contents)
+    }
+    fn check_translation_completion(
+        &self,
+        chunks: Vec<String>,
+        current_chunk: String,
+    ) -> Result<(bool, usize), Box<dyn Error>> {
+        let find_index = chunks
+            .iter()
+            .position(|item| item.as_str() == current_chunk)
+            .unwrap_or_else(|| {
+                // 如果没有找到，返回数组的长度作为默认 index，这样is_end始终为false
+                chunks.len()
+            });
+
+        let is_end = chunks.len() - 1 == find_index;
+        let i = find_index + 1;
+
+        Ok((is_end, i))
     }
 }
 
