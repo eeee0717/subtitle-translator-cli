@@ -28,7 +28,8 @@ impl SubtitleFile for SrtFile {
         text: &String,
     ) -> Result<(Vec<String>, Vec<String>, Vec<String>), Box<dyn Error>> {
         // split "\r\n" or "\n" to get lines
-        let lines = text.split('\n').collect::<Vec<&str>>();
+        let re: Regex = Regex::new(r"\r\n|\n").unwrap();
+        let lines: Vec<&str> = re.split(text).collect::<Vec<&str>>();
         let time_pattern =
             Regex::new(r"\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}").unwrap();
         let number_pattern = Regex::new(r"^\d+$").unwrap();
