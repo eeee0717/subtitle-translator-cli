@@ -49,9 +49,9 @@ fn process_single_file(
         _ => return Err("Unsupported file type".into()),
     };
 
-    let mut srt_result: Vec<String> = vec![];
-    let mut i: usize = 0;
-    let mut current_index: usize = 0;
+    let mut translated_subtitles: Vec<String> = vec![];
+    let mut chunk_index: usize = 0;
+    let mut subtitle_number: usize = 0;
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -67,49 +67,55 @@ fn process_single_file(
     // );
 =======
     loop {
-        let (number_info, time_info, text_info) =
+        let (subtitle_number_info, time_info, subtitle_text) =
             file_struct.extract_information(text.clone()).unwrap();
 >>>>>>> 868190e (feat: complete full test)
 
-        let split_text = file_struct.split_text(text_info).unwrap();
+        let split_subtitle = file_struct.split_text(subtitle_text).unwrap();
 
-        let (tagged_text, chunk_to_translate) =
-            file_struct.format_text(split_text.clone(), i).unwrap();
+        let (tagged_subtitle, chunk_to_translate) = file_struct
+            .format_text(split_subtitle.clone(), chunk_index)
+            .unwrap();
 
         let system_prompt = create_system_prompt(source_language.clone(), target_language.clone());
         let task_prompt = create_task_prompt(
             source_language.clone(),
             target_language.clone(),
-            tagged_text,
+            tagged_subtitle,
             chunk_to_translate.clone(),
         );
-        let response = openai_translate(system_prompt, task_prompt).await.unwrap();
-        let result = file_struct.split_translated_text(response).unwrap();
+        let translation_response = openai_translate(system_prompt, task_prompt).await.unwrap();
+        let translated_chunk = file_struct
+            .split_translated_text(translation_response)
+            .unwrap();
 
-        let srt_content: String;
-        (srt_content, current_index) = file_struct
+        let formatted_subtitle: String;
+        (formatted_subtitle, subtitle_number) = file_struct
             .merge_contents(
                 chunk_to_translate.clone(),
-                result.clone(),
+                translated_chunk.clone(),
                 time_info,
-                current_index,
-                number_info,
+                subtitle_number,
+                subtitle_number_info,
             )
             .unwrap();
-        srt_result.push(srt_content);
+        translated_subtitles.push(formatted_subtitle);
 
-        let is_end: bool;
-        (is_end, i) = file_struct
-            .check_translation_completion(split_text, chunk_to_translate)
+        let is_translation_complete: bool;
+        (is_translation_complete, chunk_index) = file_struct
+            .check_translation_completion(split_subtitle, chunk_to_translate)
             .unwrap();
 
-        println!("is_end:{:?}, i:{:?}", is_end, i);
-        if is_end {
+        println!(
+            "is_translation_complete:{:?}, chunk_index:{:?}",
+            is_translation_complete, chunk_index
+        );
+        if is_translation_complete {
             break;
         }
     }
     println!("****************");
-    println!("srt_result:\r\n{:?}", srt_result);
+    println!("translated_subtitles:\r\n{:?}", translated_subtitles);
     println!("****************");
 
 <<<<<<< HEAD

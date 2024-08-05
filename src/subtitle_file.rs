@@ -60,10 +60,10 @@ impl SubtitleFile for SrtFile {
         if current_text.len() > 0 {
             text_info.push(current_text.join("\n"));
         }
-        println!("{:?}", number_info.len());
-        println!("{:?}", time_info.len());
-        println!("{:?}", text_info);
-        println!("***********");
+        // println!("{:?}", number_info.len());
+        // println!("{:?}", time_info.len());
+        // println!("{:?}", text_info);
+        // println!("***********");
 
         Ok((number_info, time_info, text_info))
     }
@@ -85,6 +85,10 @@ impl SubtitleFile for SrtFile {
         source_text_chunks: Vec<String>,
         i: usize,
     ) -> Result<(String, String), Box<dyn Error>> {
+<<<<<<< HEAD
+=======
+        // println!("{:?}", source_text_chunks[0]);
+>>>>>>> 2cc3720 (bug: index cannot match)
         let before = source_text_chunks[0..i].join("");
         let current = format!("<TRANSLATE_THIS>{}</TRANSLATE_THIS>", source_text_chunks[i]);
         let after = source_text_chunks[i + 1..].join("");
@@ -92,6 +96,7 @@ impl SubtitleFile for SrtFile {
 
         Ok((tagged_text, source_text_chunks[i].clone()))
     }
+<<<<<<< HEAD
     fn merge_contents(
         &self,
         contents: &String,
@@ -115,6 +120,82 @@ impl SubtitleFile for SrtFile {
                     merged_contents.push_str(format!("{}\n", line).as_str());
                 }
             }
+=======
+
+    fn split_translated_text(&self, text: String) -> Result<String, Box<dyn Error>> {
+        // println!("翻译完整内容：{:?}", text);
+        let result: Vec<&str> = text
+            .split("```")
+            .filter(|item| !item.trim().is_empty())
+            .collect();
+
+        // for x in result.iter() {
+        //     println!("****************\r\n");
+        //     println!("切分内容：{:?}", x);
+        //     println!("****************\r\n");
+        // }
+
+        if let Some(last_part) = result.last() {
+            Ok(last_part.trim().to_string())
+        } else {
+            Ok("未截取到翻译内容".to_string())
+        }
+    }
+
+    fn merge_contents(
+        &self,
+        chunk_to_translate: String,
+        result: String,
+        time_info: Vec<String>,
+        current_index: usize,
+        number_info: Vec<String>,
+    ) -> Result<(String, usize), Box<dyn Error>> {
+        let text_lines: Vec<&str> = chunk_to_translate.split("<T>").collect();
+        let result_lines: Vec<&str> = result.split("<T>").collect();
+        let mut combined_lines: Vec<String> = Vec::new();
+
+        for (index, line) in result_lines.iter().enumerate() {
+            if current_index + index >= number_info.len() {
+                println!(
+                    "Error: current_index + index ({}) >= number_info.len() ({})",
+                    current_index + index,
+                    number_info.len()
+                );
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Index out of bounds in number_info",
+                )));
+            }
+            if current_index + index >= time_info.len() {
+                println!(
+                    "Error: current_index + index ({}) >= time_info.len() ({})",
+                    current_index + index,
+                    time_info.len()
+                );
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Index out of bounds in time_info",
+                )));
+            }
+            if index >= text_lines.len() {
+                println!("result_lines:{:?}", result_lines);
+                println!(
+                    "Error: index ({}) >= text_lines.len() ({})",
+                    index,
+                    text_lines.len()
+                );
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Index out of bounds in text_lines",
+                )));
+            }
+
+            combined_lines.push(number_info[current_index + index].clone());
+            combined_lines.push(time_info[current_index + index].clone());
+            combined_lines.push(line.to_string());
+            combined_lines.push(text_lines[index].to_string());
+            combined_lines.push(String::new());
+>>>>>>> 2cc3720 (bug: index cannot match)
         }
         Ok(merged_contents)
     }
