@@ -85,6 +85,7 @@ fn process_single_file(
             chunk_to_translate.clone(),
         );
         let translation_response = openai_translate(system_prompt, task_prompt).await.unwrap();
+        println!("translation_response:{:?}\r\n", translation_response);
         let translated_chunk = file_struct
             .split_translated_text(translation_response)
             .unwrap();
@@ -110,6 +111,7 @@ fn process_single_file(
             "is_translation_complete:{:?}, chunk_index:{:?}",
             is_translation_complete, chunk_index
         );
+
         if is_translation_complete {
             break;
         }
