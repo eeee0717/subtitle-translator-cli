@@ -39,10 +39,15 @@ mod tests {
     #[test]
     fn test_process_files() {
         let config = Config {
-            file_path: "test4.srt".to_string(),
+            file_path: "test5.srt".to_string(),
             file_name: "//".to_string(),
+<<<<<<< HEAD
             input_language: "auto".to_string(),
             output_language: "en".to_string(),
+=======
+            source_language: "English".to_string(),
+            target_language: "简体中文".to_string(),
+>>>>>>> d912873 (bug：cannot translate perfectly)
         };
         let start = Instant::now();
         let translated_text = process_file(

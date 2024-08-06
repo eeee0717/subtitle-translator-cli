@@ -159,10 +159,10 @@ impl SubtitleFile for SrtFile {
         for (index, line) in result_lines.iter().enumerate() {
             combined_lines.push(number_info[current_index + index].clone());
             combined_lines.push(time_info[current_index + index].clone());
-            combined_lines.push(line.to_string());
             if index < text_lines.len() {
                 combined_lines.push(text_lines[index].to_string());
             }
+            combined_lines.push(line.to_string());
             combined_lines.push(String::new());
 >>>>>>> 2cc3720 (bug: index cannot match)
         }

@@ -9,7 +9,7 @@ use std::error::Error;
 use std::fs::{self, File};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{string, thread};
 
 pub fn process_file(
     file_path: String,
@@ -50,7 +50,7 @@ fn process_single_file(
     };
 
     let mut translated_subtitles: Vec<String> = vec![];
-    let mut chunk_index: usize = 3;
+    let mut chunk_index: usize = 0;
     let mut subtitle_number: usize = 0;
 
 <<<<<<< HEAD
@@ -111,7 +111,7 @@ fn process_single_file(
             "is_translation_complete:{:?}, chunk_index:{:?}",
             is_translation_complete, chunk_index
         );
-        is_translation_complete = true;
+        // is_translation_complete = true;
         if is_translation_complete {
             break;
         }
@@ -135,14 +135,23 @@ fn process_single_file(
     //     .merge_contents(&contents, translated_combined_text)
     //     .unwrap();
 
+<<<<<<< HEAD
     // let mut file = File::create(format!(
     //     "{}_{}.{}",
     //     file_name,
     //     output_language.clone(),
     //     file_extension
     // ))?;
+=======
+    let mut file = File::create(format!(
+        "{}_{}.{}",
+        file_name,
+        target_language.clone(),
+        file_extension
+    ))?;
+>>>>>>> d912873 (bug：cannot translate perfectly)
 
-    // file.write_all(merged_contents.as_bytes())?;
+    file.write_all(&translated_subtitles.join("").into_bytes())?;
     Ok(())
 }
 
