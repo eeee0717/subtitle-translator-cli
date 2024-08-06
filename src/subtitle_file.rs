@@ -154,46 +154,15 @@ impl SubtitleFile for SrtFile {
         let result_lines: Vec<&str> = result.split("<T>").collect();
         let mut combined_lines: Vec<String> = Vec::new();
 
+        println!("text_lines:{:?}", text_lines.len());
+        println!("result_lines:{:?}", result_lines.len());
         for (index, line) in result_lines.iter().enumerate() {
-            if current_index + index >= number_info.len() {
-                println!(
-                    "Error: current_index + index ({}) >= number_info.len() ({})",
-                    current_index + index,
-                    number_info.len()
-                );
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "Index out of bounds in number_info",
-                )));
-            }
-            if current_index + index >= time_info.len() {
-                println!(
-                    "Error: current_index + index ({}) >= time_info.len() ({})",
-                    current_index + index,
-                    time_info.len()
-                );
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "Index out of bounds in time_info",
-                )));
-            }
-            if index >= text_lines.len() {
-                println!("result_lines:{:?}", result_lines);
-                println!(
-                    "Error: index ({}) >= text_lines.len() ({})",
-                    index,
-                    text_lines.len()
-                );
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    "Index out of bounds in text_lines",
-                )));
-            }
-
             combined_lines.push(number_info[current_index + index].clone());
             combined_lines.push(time_info[current_index + index].clone());
             combined_lines.push(line.to_string());
-            combined_lines.push(text_lines[index].to_string());
+            if index < text_lines.len() {
+                combined_lines.push(text_lines[index].to_string());
+            }
             combined_lines.push(String::new());
 >>>>>>> 2cc3720 (bug: index cannot match)
         }

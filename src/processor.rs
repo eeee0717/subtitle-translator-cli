@@ -50,7 +50,7 @@ fn process_single_file(
     };
 
     let mut translated_subtitles: Vec<String> = vec![];
-    let mut chunk_index: usize = 0;
+    let mut chunk_index: usize = 3;
     let mut subtitle_number: usize = 0;
 
 <<<<<<< HEAD
@@ -102,7 +102,7 @@ fn process_single_file(
             .unwrap();
         translated_subtitles.push(formatted_subtitle);
 
-        let is_translation_complete: bool;
+        let mut is_translation_complete: bool;
         (is_translation_complete, chunk_index) = file_struct
             .check_translation_completion(split_subtitle, chunk_to_translate)
             .unwrap();
@@ -111,7 +111,7 @@ fn process_single_file(
             "is_translation_complete:{:?}, chunk_index:{:?}",
             is_translation_complete, chunk_index
         );
-
+        is_translation_complete = true;
         if is_translation_complete {
             break;
         }
