@@ -18,3 +18,8 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4.0.32", features = ["derive"] } # creating a cli
 subparse = { version = "0.7.0" }
+async-openai = { version = "0.25.0" }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+reqwest = "0.12.8"
+tokio = { version = "*", features = ["full"] }

@@ -23,7 +23,8 @@ enum Command {
     },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
     match args.command {
         Command::OpenAI {
