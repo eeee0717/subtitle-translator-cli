@@ -16,3 +16,5 @@ name = "stc"
 path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4.0.32", features = ["derive"] } # creating a cli
+subparse = { version = "0.7.0" }
