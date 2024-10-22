@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use subtitle_translator_cli::handle::handle_google_translate;
+use subtitle_translator_cli::handle::handle_openai_translate;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -31,6 +31,6 @@ async fn main() {
             path,
             source_language,
             target_language,
-        } => handle_google_translate(path, source_language, target_language),
+        } => handle_openai_translate(path, source_language, target_language),
     }
 }
