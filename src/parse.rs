@@ -26,9 +26,9 @@ mod test_parse {
 
     #[test]
     fn test_parse_file() {
-        let path = std::path::PathBuf::from("test.srt");
-        let subtitle_entries = crate::parse::parse_file(&path);
+        let mock = crate::mock::Mock::new();
+        let subtitle_entries = crate::parse::parse_file(&mock.path);
         eprintln!("{:?}", subtitle_entries);
-        assert_eq!(subtitle_entries.len(), 2);
+        assert_eq!(subtitle_entries.len(), 60);
     }
 }

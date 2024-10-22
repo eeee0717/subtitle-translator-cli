@@ -24,14 +24,12 @@ impl TextSplitter {
 }
 
 mod test {
+
     #[test]
     fn test_split_text() {
-        let path = std::path::PathBuf::from("test.srt");
-        let subtitle_entries = crate::parse::parse_file(&path);
-        let subtitle_extractor =
-            crate::subtitle_extractor::SubtitleExtractor::extractor(subtitle_entries);
+        let mock = crate::mock::Mock::new();
         let text_splitter =
-            crate::text_splitter::TextSplitter::split_text(&subtitle_extractor.text_info);
+            crate::text_splitter::TextSplitter::split_text(&mock.subtitle_extractor.text_info);
         eprintln!("{:?}", text_splitter.split_result[0]);
         assert_eq!(text_splitter.split_result.len(), 2)
     }

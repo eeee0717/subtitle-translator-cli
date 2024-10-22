@@ -16,6 +16,6 @@ pub fn handle_openai_translate(path: PathBuf, source_language: String, target_la
     );
     let openai = OpenAI::new();
     eprintln!("OpenAI initialized!\nOpenai: {:?}", openai);
-    let subtitle_extractor = SubtitleExtractor::extractor(subtitle_entries);
+    let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries);
     let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info);
 }
