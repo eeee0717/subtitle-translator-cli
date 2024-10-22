@@ -1,4 +1,4 @@
-use crate::{openai::OpenAI, parse::*};
+use crate::{openai::OpenAI, parse::*, subtitle_extractor::SubtitleExtractor};
 use std::path::PathBuf;
 
 pub fn handle_openai_translate(path: PathBuf, source_language: String, target_language: String) {
@@ -11,4 +11,5 @@ pub fn handle_openai_translate(path: PathBuf, source_language: String, target_la
     );
     let openai = OpenAI::new();
     eprintln!("OpenAI initialized!\nOpenai: {:?}", openai);
+    let subtitle_extractor = SubtitleExtractor::extractor(subtitle_entries);
 }
