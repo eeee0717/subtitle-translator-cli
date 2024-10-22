@@ -23,3 +23,5 @@ dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
 reqwest = "0.12.8"
 tokio = { version = "*", features = ["full"] }
+tera = { version = "1", default-features = false }
+lazy_static = "1.5.0"

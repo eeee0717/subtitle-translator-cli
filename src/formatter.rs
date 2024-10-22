@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Formatter {
     pub tagged_text: String,
     pub chunk_to_translate: String,
@@ -26,5 +27,12 @@ impl Formatter {
 
 mod test {
     #[test]
-    fn test_format() {}
+    fn test_format() {
+        let mock = crate::mock::Mock::new();
+        let formatter = crate::formatter::Formatter::format(0, &mock.text_splitter.split_result);
+        // eprintln!("{:?}", formatter);
+        eprintln!("tagged_text:{}", formatter.tagged_text);
+        eprintln!("chunk_to_translate:{}", formatter.chunk_to_translate);
+        assert_eq!(formatter.chunk_to_translate.len(), 1263);
+    }
 }

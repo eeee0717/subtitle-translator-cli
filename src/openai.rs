@@ -1,4 +1,11 @@
-use async_openai::{config::OpenAIConfig, Client};
+use async_openai::{
+    config::OpenAIConfig,
+    types::{
+        ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
+        CreateChatCompletionRequestArgs,
+    },
+    Client,
+};
 
 #[derive(Debug)]
 pub struct OpenAI {
@@ -12,10 +19,6 @@ impl OpenAI {
         let api_key = dotenv!("API_KEY").to_string();
         let api_base = dotenv!("API_BASE").to_string();
         let model = dotenv!("MODEL").to_string();
-        eprintln!(
-            "API Key: {}\nAPI Base: {}\nModel: {}",
-            api_key, api_base, model
-        );
         let config = OpenAIConfig::new()
             .with_api_key(&api_key)
             .with_api_base(&api_base);
@@ -26,6 +29,32 @@ impl OpenAI {
             model,
             client,
         }
+    }
+    pub async fn chat(
+        &self,
+        prompt: String,
+        user_message: String,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let request = CreateChatCompletionRequestArgs::default()
+            .max_tokens(4_000u32)
+            .model(self.model.clone())
+            .messages([
+                ChatCompletionRequestSystemMessageArgs::default()
+                    .content(prompt)
+                    .build()?
+                    .into(),
+                ChatCompletionRequestUserMessageArgs::default()
+                    .content(user_message)
+                    .build()?
+                    .into(),
+            ])
+            .build()?;
+        let response = self.client.chat().create(request).await?;
+        Ok(response.choices[0]
+            .message
+            .content
+            .clone()
+            .expect("No Content Found"))
     }
 }
 mod test {
@@ -53,6 +82,7 @@ mod test {
                 choice.index, choice.message.role, choice.message.content
             );
         }
+
         Ok(())
     }
 }

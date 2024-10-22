@@ -1,4 +1,5 @@
 use crate::{
+    formatter::Formatter,
     openai::OpenAI,
     parse::*,
     subtitle_extractor::SubtitleExtractor,
@@ -18,4 +19,7 @@ pub fn handle_openai_translate(path: PathBuf, source_language: String, target_la
     eprintln!("OpenAI initialized!\nOpenai: {:?}", openai);
     let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries);
     let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info);
+    // TODO: use loop to iterate over text_splitter.split_result
+    let index = 0;
+    let formatter = Formatter::format(index, &text_splitter.split_result);
 }
