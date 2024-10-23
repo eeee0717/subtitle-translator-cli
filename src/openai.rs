@@ -67,7 +67,7 @@ mod test {
             .model("gpt-4o-mini")
             .messages([
                 async_openai::types::ChatCompletionRequestUserMessageArgs::default()
-                    .content("Hi!")
+                    .content("Hi! Are you ChatGPT?")
                     .build()?
                     .into(),
             ])

@@ -18,17 +18,8 @@ impl SubtitleCombiner {
         current_index: usize,
         number_info: Vec<String>,
     ) -> Self {
-        // eprintln!("combined_text:{}", combined_text);
-        // eprintln!("translated_text:{}", translated_text);
-        // eprintln!("time_info: {:?}", time_info);
-        // eprintln!("current_index:{}", current_index);
-        // eprintln!("number_info: {:?}", number_info);
         let text_lines = combined_text.split("<T>").collect::<Vec<&str>>();
-        eprintln!("text_lines: {:?}", text_lines);
-        eprintln!("text_lines_len: {:?}", text_lines.len());
         let result_lines = translated_text.split("<T>").collect::<Vec<&str>>();
-        eprintln!("result_lines: {:?}", result_lines);
-        eprintln!("result_lines_len: {:?}", result_lines.len());
         let mut combined_lines: Vec<String> = vec![];
         for (index, result_line) in result_lines.clone().into_iter().enumerate() {
             combined_lines.push(number_info[current_index + index].clone());
@@ -46,6 +37,7 @@ impl SubtitleCombiner {
     }
 }
 mod test {
+
     #[test]
     fn test_combine() {
         let mock = crate::mock::Mock::new();
@@ -53,10 +45,11 @@ mod test {
             mock.formatter.chunk_to_translate,
             mock.translator.translated_result,
             mock.subtitle_extractor.time_info,
-            19,
+            0,
             mock.subtitle_extractor.number_info,
         );
-        eprintln!("{:?}", subtitle_combiner);
-        assert_eq!(subtitle_combiner.current_index, 39);
+        // eprintln!("{:?}", subtitle_combiner);
+        eprintln!("current_index:{}", subtitle_combiner.current_index);
+        assert_eq!(subtitle_combiner.current_index, crate::GROUP_SIZE);
     }
 }

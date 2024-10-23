@@ -38,9 +38,9 @@ mod test {
         let mock = crate::mock::Mock::new();
         let subtitle_extractor =
             crate::subtitle_extractor::SubtitleExtractor::extractor(&mock.subtitle_entries);
-        eprintln!("time_info:{:?}", subtitle_extractor.time_info);
+        // eprintln!("time_info:{:?}", subtitle_extractor.time_info);
         // eprintln!("text_info:{:?}", subtitle_extractor.text_info);
-        eprintln!("number_info:{:?}", subtitle_extractor.number_info);
+        // eprintln!("number_info:{:?}", subtitle_extractor.number_info);
         assert_eq!(subtitle_extractor.number_info.len(), 60)
     }
 }

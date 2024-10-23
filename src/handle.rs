@@ -1,10 +1,6 @@
 use crate::{
-    formatter::Formatter,
-    openai::OpenAI,
-    parse::*,
-    subtitle_combiner::{self, SubtitleCombiner},
-    subtitle_extractor::SubtitleExtractor,
-    text_splitter::{self, TextSplitter},
+    formatter::Formatter, parse::*, subtitle_combiner::SubtitleCombiner,
+    subtitle_extractor::SubtitleExtractor, text_splitter::TextSplitter, GROUP_SIZE,
 };
 use std::path::PathBuf;
 
@@ -20,29 +16,33 @@ pub async fn handle_openai_translate(
         source_language,
         target_language
     );
-    let openai = OpenAI::new();
-    eprintln!("OpenAI initialized!\nOpenai: {:?}", openai);
     let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries);
     let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info);
-    // TODO: use loop to iterate over text_splitter.split_result
-    let index = 0;
-    let current_index = index * 20 - 1;
-    let formatter = Formatter::format(index, &text_splitter.split_result);
     let translator = crate::translator::Translator::new();
-    let translator = translator
-        .translate(
-            &source_language,
-            &target_language,
-            formatter.tagged_text,
-            formatter.chunk_to_translate.clone(),
-        )
-        .await;
-    let translator = translator.format_translated_result();
-    let subtitle_combiner = SubtitleCombiner::combine(
-        formatter.chunk_to_translate,
-        translator.translated_result,
-        subtitle_extractor.time_info,
-        current_index,
-        subtitle_extractor.number_info,
-    );
+    let mut current_index = 0;
+    let mut final_srt_content = String::new();
+    for index in 0..(subtitle_entries.len() / GROUP_SIZE) {
+        // TODO: use loop to iterate over text_splitter.split_result
+        let formatter = Formatter::format(index, &text_splitter.split_result);
+        let mut translator = translator
+            .translate(
+                &source_language,
+                &target_language,
+                formatter.tagged_text,
+                formatter.chunk_to_translate.clone(),
+            )
+            .await;
+        let translator = translator.format_translated_result();
+        let subtitle_combiner = SubtitleCombiner::combine(
+            formatter.chunk_to_translate,
+            translator.translated_result,
+            subtitle_extractor.time_info.clone(),
+            current_index,
+            subtitle_extractor.number_info.clone(),
+        );
+        current_index = subtitle_combiner.current_index;
+        eprintln!("Translated {} entries", current_index);
+        final_srt_content.push_str(&subtitle_combiner.srt_content);
+    }
+    eprintln!("Final srt content: {}", final_srt_content);
 }
