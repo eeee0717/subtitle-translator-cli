@@ -31,8 +31,11 @@ mod test {
         let mock = crate::mock::Mock::new();
         let formatter = crate::formatter::Formatter::format(0, &mock.text_splitter.split_result);
         // eprintln!("{:?}", formatter);
-        eprintln!("tagged_text:{}", formatter.tagged_text);
-        eprintln!("chunk_to_translate:{}", formatter.chunk_to_translate);
+        // eprintln!("tagged_text:{}", formatter.tagged_text);
+        // eprintln!("chunk_to_translate:{}", formatter.chunk_to_translate);
+        for (index, item) in formatter.chunk_to_translate.split("<T>").enumerate() {
+            eprintln!("{}:{}", index, item);
+        }
         assert_eq!(formatter.chunk_to_translate.len(), 1263);
     }
 }

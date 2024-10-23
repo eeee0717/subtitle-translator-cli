@@ -7,6 +7,7 @@ pub mod handle;
 pub mod mock;
 pub mod openai;
 pub mod parse;
+pub mod subtitle_combiner;
 pub mod subtitle_extractor;
 pub mod text_splitter;
 pub mod translator;
