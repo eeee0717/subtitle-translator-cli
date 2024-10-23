@@ -102,7 +102,6 @@ impl Translator {
     }
 }
 mod test {
-    use crate::GROUP_SIZE;
 
     #[test]
     fn test_format_user_message() {
@@ -134,7 +133,7 @@ mod test {
         for (index, item) in translator.translated_result.split("<T>").enumerate() {
             eprintln!("{}:{}", index, item);
         }
-        assert!(translator.translated_result.split("<T>").count() == GROUP_SIZE);
+        assert!(translator.translated_result.split("<T>").count() == crate::GROUP_SIZE);
     }
     #[tokio::test]
     async fn test_translate() {
@@ -151,7 +150,7 @@ mod test {
                 formatter.chunk_to_translate,
             )
             .await;
-        assert!(translator.translated_result.split("<T>").count() == GROUP_SIZE);
+        assert!(translator.translated_result.split("<T>").count() == crate::GROUP_SIZE);
         eprintln!("{:?}", translator);
     }
 }

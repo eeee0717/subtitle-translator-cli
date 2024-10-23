@@ -17,7 +17,7 @@ impl SubtitleCombiner {
         time_info: Vec<String>,
         current_index: usize,
         number_info: Vec<String>,
-    ) -> (String, usize) {
+    ) -> Self {
         // eprintln!("combined_text:{}", combined_text);
         // eprintln!("translated_text:{}", translated_text);
         // eprintln!("time_info: {:?}", time_info);
@@ -37,8 +37,12 @@ impl SubtitleCombiner {
             combined_lines.push(text_lines[index].to_string());
             combined_lines.push("".to_string());
         }
-        let srt_content = combined_lines.join("\n");
-        return (srt_content, current_index + result_lines.len());
+        // replace <nl> with newline
+        let srt_content = combined_lines.join("\n").replace("<nl>", "\n");
+        return Self {
+            srt_content,
+            current_index: current_index + result_lines.len(),
+        };
     }
 }
 mod test {
@@ -53,6 +57,6 @@ mod test {
             mock.subtitle_extractor.number_info,
         );
         eprintln!("{:?}", subtitle_combiner);
-        assert_eq!(subtitle_combiner.1, 39);
+        assert_eq!(subtitle_combiner.current_index, 39);
     }
 }

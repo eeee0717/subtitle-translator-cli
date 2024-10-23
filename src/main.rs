@@ -45,6 +45,6 @@ async fn main() {
             path,
             source_language,
             target_language,
-        } => handle_openai_translate(path, source_language, target_language),
+        } => handle_openai_translate(path, source_language, target_language).await,
     }
 }
