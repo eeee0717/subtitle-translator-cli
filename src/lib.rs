@@ -11,7 +11,7 @@ pub mod subtitle_combiner;
 pub mod subtitle_extractor;
 pub mod text_splitter;
 pub mod translator;
-const GROUP_SIZE: usize = 20;
+const GROUP_SIZE: usize = 30;
 
 lazy_static! {
     pub static ref TEMPLATES: tera::Tera = {

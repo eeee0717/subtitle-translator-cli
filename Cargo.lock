@@ -1865,6 +1865,7 @@ dependencies = [
  "clap",
  "dotenv",
  "dotenv_codegen",
+ "futures",
  "lazy_static 1.5.0",
  "reqwest",
  "subparse",
