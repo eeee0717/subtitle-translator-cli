@@ -1,8 +1,9 @@
+use crate::GROUP_SIZE;
+
 #[derive(Debug)]
 pub struct TextSplitter {
     pub split_result: Vec<String>,
 }
-const GROUP_SIZE: usize = 20;
 impl TextSplitter {
     pub fn new() -> Self {
         Self {

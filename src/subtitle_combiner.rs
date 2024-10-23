@@ -1,5 +1,3 @@
-use std::f32::consts::E;
-
 #[derive(Debug)]
 pub struct SubtitleCombiner {
     pub srt_content: String,
@@ -51,9 +49,10 @@ mod test {
             mock.formatter.chunk_to_translate,
             mock.translator.translated_result,
             mock.subtitle_extractor.time_info,
-            0,
+            19,
             mock.subtitle_extractor.number_info,
         );
         eprintln!("{:?}", subtitle_combiner);
+        assert_eq!(subtitle_combiner.1, 39);
     }
 }

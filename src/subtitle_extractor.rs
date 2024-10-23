@@ -19,10 +19,14 @@ impl SubtitleExtractor {
         let mut subtitle_extractor = Self::new();
         for (index, entry) in entries.into_iter().enumerate() {
             let time_info = format!("{} --> {}", entry.timespan.start, entry.timespan.end);
+            // remove \n in the line
+            let text_info = entry
+                .line
+                .clone()
+                .expect("No line found")
+                .replace("\n", "<nl>");
             subtitle_extractor.time_info.push(time_info);
-            subtitle_extractor
-                .text_info
-                .push(entry.line.clone().expect("No line found"));
+            subtitle_extractor.text_info.push(text_info);
             subtitle_extractor.number_info.push((index + 1).to_string());
         }
         subtitle_extractor
