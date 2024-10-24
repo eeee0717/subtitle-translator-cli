@@ -20,20 +20,21 @@ pub async fn handle_openai_translate(
         SubtitleExtractor::extractor(&subtitle_entries).expect("Failed to extract subtitle");
     let text_splitter =
         TextSplitter::split_text(&subtitle_extractor.text_info).expect("Failed to split text");
-    let translator = crate::translator::Translator::new();
+    let mut translator = crate::translator::Translator::new();
     let mut current_index = 0;
     let mut final_srt_content = String::new();
     for index in 0..(subtitle_entries.len() / GROUP_SIZE) {
         // TODO: use loop to iterate over text_splitter.split_result
         let formatter = Formatter::format(index, &text_splitter.split_result);
-        let mut translator = translator
+        translator
             .translate(
                 &source_language,
                 &target_language,
                 formatter.tagged_text,
                 formatter.chunk_to_translate.clone(),
             )
-            .await;
+            .await
+            .expect("Failed to translate");
         let translator = translator.format_translated_result();
         let subtitle_combiner = SubtitleCombiner::combine(
             formatter.chunk_to_translate,
