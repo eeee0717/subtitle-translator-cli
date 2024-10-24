@@ -63,7 +63,7 @@ impl Translator {
     }
 
     /// 格式化翻译结果
-    pub fn format_translated_result(&mut self) -> Self {
+    pub fn format_translated_result(&mut self) -> String {
         let result = self
             .translated_result
             .split("```")
@@ -72,10 +72,7 @@ impl Translator {
             .map(|s| s.trim().to_string())
             .unwrap_or_default();
 
-        self.translated_result = result;
-        Self {
-            translated_result: self.translated_result.clone(),
-        }
+        result
     }
 
     /// 执行翻译
@@ -185,8 +182,8 @@ mod tests {
             .await
             .expect("Failed to translate");
 
-        let translator = translator.format_translated_result();
-        translator.translated_result.split("<T>").count() == crate::GROUP_SIZE
+        let formatted_result = translator.format_translated_result();
+        formatted_result.split("<T>").count() == crate::GROUP_SIZE
     }
 
     #[tokio::test]
