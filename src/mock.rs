@@ -19,8 +19,9 @@ pub struct Mock {
 impl Mock {
     pub fn new() -> Self {
         let path = PathBuf::from("test.srt");
-        let subtitle_entries = parse_file(&path);
-        let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries);
+        let subtitle_entries = parse_file(&path).expect("Failed to parse file");
+        let subtitle_extractor =
+            SubtitleExtractor::extractor(&subtitle_entries).expect("Failed to extract subtitle");
         let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info);
         let formatter = crate::formatter::Formatter::format(1, &text_splitter.split_result);
         let translator = Translator::new();

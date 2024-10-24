@@ -1,5 +1,5 @@
 use crate::{
-    formatter::Formatter, parse::*, subtitle_combiner::SubtitleCombiner,
+    formatter::Formatter, subtitle_combiner::SubtitleCombiner,
     subtitle_extractor::SubtitleExtractor, text_splitter::TextSplitter, GROUP_SIZE,
 };
 use std::path::PathBuf;
@@ -9,14 +9,15 @@ pub async fn handle_openai_translate(
     source_language: String,
     target_language: String,
 ) {
-    let subtitle_entries = parse_file(&path);
+    let subtitle_entries = crate::parse::parse_file(&path).expect("Failed to parse file");
     eprintln!(
         "Translating {} entries from {} to {}",
         subtitle_entries.len(),
         source_language,
         target_language
     );
-    let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries);
+    let subtitle_extractor =
+        SubtitleExtractor::extractor(&subtitle_entries).expect("Failed to extract subtitle");
     let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info);
     let translator = crate::translator::Translator::new();
     let mut current_index = 0;
