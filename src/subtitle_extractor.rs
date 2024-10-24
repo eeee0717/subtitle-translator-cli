@@ -53,10 +53,13 @@ mod test {
     fn test_extractor_success() {
         let path = std::path::PathBuf::from("test.srt");
         let subtitle_entries = parse::parse_file(&path).expect("Failed to parse file");
+
         let result = SubtitleExtractor::extractor(&subtitle_entries);
 
         assert!(result.is_ok());
+
         let extractor = result.unwrap();
+
         assert_eq!(extractor.number_info.len(), 60);
         assert_eq!(extractor.time_info.len(), 60);
         assert_eq!(extractor.text_info.len(), 60);
@@ -67,7 +70,9 @@ mod test {
         let path = std::path::PathBuf::from("test.srt");
         let subtitle_entries = parse::parse_file(&path).expect("Failed to parse file");
         let entry = &subtitle_entries[0];
+
         let time_info = SubtitleExtractor::format_time_info(entry);
+
         assert_eq!(time_info, "0:01:34.095 --> 0:01:36.180");
     }
 
@@ -76,7 +81,9 @@ mod test {
         let path = std::path::PathBuf::from("test.srt");
         let subtitle_entries = parse::parse_file(&path).expect("Failed to parse file");
         let entry = &subtitle_entries[0];
+
         let text_info = SubtitleExtractor::process_text_info(entry);
+
         assert_eq!(
             text_info,
             Some("Where in hell is<nl>your so-called magician?".to_string())

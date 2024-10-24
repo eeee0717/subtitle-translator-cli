@@ -18,7 +18,8 @@ pub async fn handle_openai_translate(
     );
     let subtitle_extractor =
         SubtitleExtractor::extractor(&subtitle_entries).expect("Failed to extract subtitle");
-    let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info);
+    let text_splitter =
+        TextSplitter::split_text(&subtitle_extractor.text_info).expect("Failed to split text");
     let translator = crate::translator::Translator::new();
     let mut current_index = 0;
     let mut final_srt_content = String::new();
