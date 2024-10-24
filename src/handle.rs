@@ -21,8 +21,9 @@ pub async fn handle_openai_translate(
     let text_splitter =
         TextSplitter::split_text(&subtitle_extractor.text_info).expect("Failed to split text");
     let mut translator = crate::translator::Translator::new();
-    let mut current_index = 0;
     let mut final_srt_content = String::new();
+    let mut subtitle_combiner = SubtitleCombiner::new();
+
     for index in 0..(subtitle_entries.len() / GROUP_SIZE) {
         // TODO: use loop to iterate over text_splitter.split_result
         let formatter = Formatter::format(index, &text_splitter.split_result);
@@ -35,17 +36,25 @@ pub async fn handle_openai_translate(
             )
             .await
             .expect("Failed to translate");
-        let translator = translator.format_translated_result();
-        let subtitle_combiner = SubtitleCombiner::combine(
-            formatter.chunk_to_translate,
-            translator.translated_result,
-            subtitle_extractor.time_info.clone(),
-            current_index,
-            subtitle_extractor.number_info.clone(),
+        let formatted_result = translator.format_translated_result();
+
+        let input = crate::subtitle_combiner::CombineInput {
+            combined_text: formatter.chunk_to_translate,
+            translated_text: formatted_result,
+            time_info: subtitle_extractor.time_info.clone(),
+            number_info: subtitle_extractor.number_info.clone(),
+        };
+
+        subtitle_combiner
+            .combine(input)
+            .expect("Combine should succeed");
+
+        eprintln!(
+            "Translated {} entries",
+            subtitle_combiner.get_current_index()
         );
-        current_index = subtitle_combiner.current_index;
-        eprintln!("Translated {} entries", current_index);
-        final_srt_content.push_str(&subtitle_combiner.srt_content);
+        final_srt_content.push_str(&subtitle_combiner.get_content());
+        eprintln!("Final srt content: {}", final_srt_content);
     }
     eprintln!("Final srt content: {}", final_srt_content);
 }
