@@ -1,58 +1,59 @@
-mod args;
-pub use args::*;
+#[macro_use]
+extern crate dotenv_codegen;
+#[macro_use]
+extern crate lazy_static;
+pub mod formatter;
+pub mod handle;
+pub mod mock;
+pub mod openai;
+pub mod parse;
+pub mod subtitle_combiner;
+pub mod subtitle_extractor;
+pub mod text_splitter;
+pub mod translator;
+const GROUP_SIZE: usize = 30;
 
-mod config;
-pub use config::*;
-
-mod translator;
-pub use translator::*;
-
-mod subtitle_file;
-pub use subtitle_file::*;
-
-mod processor;
-pub use processor::*;
-
-mod utils;
-pub use utils::*;
-
-mod openai;
-pub use openai::*;
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use std::{fs, time::Instant};
-    #[test]
-    fn test_translate() {
-        let config = Config {
-            file_path: "TEST.txt".to_string(),
-            file_name: "TEST.txt".to_string(),
-            input_language: "auto".to_string(),
-            output_language: "zh-CN".to_string(),
+lazy_static! {
+    pub static ref TEMPLATES: tera::Tera = {
+        let tera = match tera::Tera::new("src/templates/*") {
+            Ok(t) => t,
+            Err(e) => {
+                println!("Parsing error(s): {}", e);
+                ::std::process::exit(1);
+            }
         };
-        let contents = fs::read_to_string(&config.file_path).unwrap();
+        tera
+    };
+}
 
-        let translated_text = translate(contents, config.input_language, config.output_language);
-        println!("{:?}", translated_text);
+mod test {
+    lazy_static! {
+        pub static ref TEMPLATES: tera::Tera = {
+            let tera = match tera::Tera::new("src/templates/*") {
+                Ok(t) => t,
+                Err(e) => {
+                    println!("Parsing error(s): {}", e);
+                    ::std::process::exit(1);
+                }
+            };
+            tera
+        };
     }
-
     #[test]
-    fn test_process_files() {
-        let config = Config {
-            file_path: "test.srt".to_string(),
-            file_name: "//".to_string(),
-            input_language: "auto".to_string(),
-            output_language: "en".to_string(),
+    fn test_tera() {
+        let mut context = tera::Context::new();
+        context.insert("source_lang", "en");
+        context.insert("target_lang", "ja");
+        match TEMPLATES.render("prompt.txt", &context) {
+            Ok(s) => println!("{:?}", s),
+            Err(e) => {
+                println!("Error: {}", e);
+                let mut cause = std::error::Error::source(&e);
+                while let Some(e) = cause {
+                    println!("Reason: {}", e);
+                    cause = e.source();
+                }
+            }
         };
-        let start = Instant::now();
-        let translated_text = process_file(
-            config.file_path,
-            config.input_language,
-            config.output_language,
-        )
-        .unwrap();
-        println!("{:?}", translated_text);
-        println!("Time elapsed: {:?}", start.elapsed());
     }
 }

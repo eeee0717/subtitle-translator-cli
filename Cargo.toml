@@ -16,12 +16,14 @@ name = "stc"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.5.7", features = ["derive"] }
-rustlate = "1.0.0"
-regex = "1.10.5"
-rayon = "1.10.0"
-indicatif = "0.17.8"
-glob = "0.3.1"
-tokio = { version = "1.39.2", features = ["macros", "rt-multi-thread"] }
-async-openai = "0.23.4"
-serde_json = "1.0.121"
+clap = { version = "4.0.32", features = ["derive"] } # creating a cli
+subparse = { version = "0.7.0" }
+async-openai = { version = "0.25.0" }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+reqwest = "0.12.8"
+tokio = { version = "*", features = ["full"] }
+tera = { version = "1", default-features = false }
+lazy_static = "1.5.0"
+futures = "0.3"  # 或者指定你需要的版本
+thiserror = "1.0.65"
