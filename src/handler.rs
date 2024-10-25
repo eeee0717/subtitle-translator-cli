@@ -79,19 +79,6 @@ pub async fn handle_openai_translate(
     source_language: String,
     target_language: String,
 ) {
-    // let subtitle_entries = crate::parse::parse_file(&path).expect("Failed to parse file");
-    // eprintln!(
-    //     "Translating {} entries from {} to {}",
-    //     subtitle_entries.len(),
-    //     source_language,
-    //     target_language
-    // );
-    // let subtitle_extractor =
-    //     SubtitleExtractor::extractor(&subtitle_entries).expect("Failed to extract subtitle");
-    // let text_splitter =
-    //     TextSplitter::split_text(&subtitle_extractor.text_info).expect("Failed to split text");
-    // let mut translator = Translator::new();
-    // let mut subtitle_combiner = SubtitleCombiner::new();
     let mut handler = Handler::setup(path);
     let final_srt_content = handler
         .handle_translator(source_language, target_language)
