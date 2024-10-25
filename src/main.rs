@@ -2,7 +2,7 @@
 extern crate lazy_static;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use subtitle_translator_cli::handle::handle_openai_translate;
+use subtitle_translator_cli::handler::handle_openai_translate;
 use tera::Tera;
 
 #[derive(Parser, Debug)]
