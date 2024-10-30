@@ -25,5 +25,6 @@ reqwest = "0.12.8"
 tokio = { version = "*", features = ["full"] }
 tera = { version = "1", default-features = false }
 lazy_static = "1.5.0"
-futures = "0.3"  # 或者指定你需要的版本
+futures = "0.3"
 thiserror = "1.0.65"
+indicatif = "0.17.8"

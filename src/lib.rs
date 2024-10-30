@@ -11,8 +11,8 @@ pub mod subtitle_combiner;
 pub mod subtitle_extractor;
 pub mod text_splitter;
 pub mod translator;
+pub mod writer;
 const GROUP_SIZE: usize = 5;
-
 lazy_static! {
     pub static ref TEMPLATES: tera::Tera = {
         let tera = match tera::Tera::new("src/templates/*") {
@@ -25,6 +25,7 @@ lazy_static! {
         tera
     };
 }
+
 #[cfg(test)]
 mod test {
     #[test]
@@ -43,5 +44,29 @@ mod test {
                 }
             }
         };
+    }
+    #[test]
+    fn test_indicatif() {
+        let pb = indicatif::ProgressBar::new(1024);
+        pb.set_style(
+            indicatif::ProgressStyle::with_template(
+                "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}/{len} ({eta})",
+            )
+            .unwrap()
+            .with_key(
+                "eta",
+                |state: &indicatif::ProgressState, w: &mut dyn std::fmt::Write| {
+                    write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap()
+                },
+            )
+            .progress_chars("#>-"),
+        );
+        pb.set_position(0);
+        for _ in 0..1024 {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            pb.inc(1);
+        }
+        pb.finish_with_message("done");
+        assert!(true);
     }
 }
