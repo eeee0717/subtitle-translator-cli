@@ -50,6 +50,10 @@ impl SubtitleCombiner {
 
         // 验证输入
         if text_lines.len() != result_lines.len() {
+            eprintln!("input: {:?}", input);
+            eprintln!("text_lines: {:?}", text_lines);
+            eprintln!("result_lines: {:?}", result_lines);
+
             return Err(SubtitleError::InvalidInput(
                 "Text lines and result lines count mismatch".to_string(),
             ));
