@@ -7,6 +7,7 @@ use crate::{
 };
 use std::path::PathBuf;
 
+#[derive(Debug)]
 pub struct Handler {
     pub subtitle_entries: Vec<SubtitleEntry>,
     pub subtitle_extractor: SubtitleExtractor,
@@ -36,42 +37,56 @@ impl Handler {
         &mut self,
         source_language: String,
         target_language: String,
-    ) -> String {
-        let mut final_srt_content = String::new();
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let chunk_count = self.subtitle_entries.len() / GROUP_SIZE;
 
-        for index in 0..(self.subtitle_entries.len() / GROUP_SIZE) {
-            // TODO: use loop to iterate over text_splitter.split_result
-            let formatter = Formatter::format(index, &self.text_splitter.split_result);
-            self.translator
-                .translate(
-                    &source_language,
-                    &target_language,
-                    formatter.tagged_text,
-                    formatter.chunk_to_translate.clone(),
-                )
-                .await
-                .expect("Failed to translate");
-            let formatted_result = self.translator.format_translated_result();
+        let mut final_srt_content = String::with_capacity(self.subtitle_entries.len());
 
-            let input = crate::subtitle_combiner::CombineInput {
-                combined_text: formatter.chunk_to_translate,
-                translated_text: formatted_result,
-                time_info: self.subtitle_extractor.time_info.clone(),
-                number_info: self.subtitle_extractor.number_info.clone(),
-            };
-
-            self.subtitle_combiner
-                .combine(input)
-                .expect("Combine should succeed");
-
-            eprintln!(
-                "Translated {} entries",
-                self.subtitle_combiner.get_current_index()
+        for index in 0..chunk_count {
+            final_srt_content.push_str(
+                &self
+                    .process_chunk(index, &source_language, &target_language)
+                    .await?,
             );
-            final_srt_content.push_str(&self.subtitle_combiner.get_content());
-            eprintln!("Final srt content: {}", final_srt_content);
         }
-        final_srt_content
+
+        Ok(final_srt_content)
+    }
+    pub async fn process_chunk(
+        &mut self,
+        index: usize,
+        source_language: &str,
+        target_language: &str,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let formatter = Formatter::format(index, &self.text_splitter.split_result);
+        self.translator
+            .translate(
+                source_language,
+                target_language,
+                formatter.tagged_text,
+                formatter.chunk_to_translate.clone(),
+            )
+            .await?;
+        let formatted_result = self.translator.format_translated_result();
+
+        let input = crate::subtitle_combiner::CombineInput {
+            combined_text: formatter.chunk_to_translate,
+            translated_text: formatted_result,
+            time_info: self.subtitle_extractor.time_info.clone(),
+            number_info: self.subtitle_extractor.number_info.clone(),
+        };
+
+        self.subtitle_combiner.combine(input)?;
+
+        eprintln!(
+            "Translated {} entries",
+            self.subtitle_combiner.get_current_index()
+        );
+
+        let content = self.subtitle_combiner.get_content();
+        eprintln!("Chunk content: {}", content);
+
+        Ok(content.to_string())
     }
 }
 pub async fn handle_openai_translate(
@@ -82,7 +97,8 @@ pub async fn handle_openai_translate(
     let mut handler = Handler::setup(path);
     let final_srt_content = handler
         .handle_translator(source_language, target_language)
-        .await;
+        .await
+        .expect("Failed to handle translator");
     eprintln!("Final srt content:\n{}", final_srt_content);
 }
 
