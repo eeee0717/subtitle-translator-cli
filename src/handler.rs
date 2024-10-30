@@ -1,3 +1,4 @@
+use futures::StreamExt;
 use indicatif::{ProgressState, ProgressStyle};
 use subparse::SubtitleEntry;
 
@@ -6,7 +7,7 @@ use crate::{
     subtitle_extractor::SubtitleExtractor, text_splitter::TextSplitter, translator::Translator,
     writer::Writer, GROUP_SIZE,
 };
-use std::{fmt::Write, path::PathBuf};
+use std::{fmt::Write, future::Future, path::PathBuf};
 
 #[derive(Debug)]
 pub struct Handler {
@@ -55,56 +56,89 @@ impl Handler {
         source_language: String,
         target_language: String,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        let mut final_srt_content = String::with_capacity(self.subtitle_entries.len());
         let chunk_count = self.subtitle_entries.len() / GROUP_SIZE;
+        let tasks = self.create_translation_tasks(chunk_count, &source_language, &target_language);
+        let results = self.execute_translation_tasks(tasks, chunk_count).await?;
+        let final_srt_content = self.combine_translation_results(results)?;
 
-        for index in 0..chunk_count {
-            final_srt_content.push_str(
-                &self
-                    .process_chunk(index, &source_language, &target_language)
-                    .await?,
-            );
-            self.progress_bar.inc(1);
-        }
         self.progress_bar.finish_with_message("done");
-
         Ok(final_srt_content)
     }
-    pub async fn process_chunk(
-        &mut self,
-        index: usize,
+
+    fn create_translation_tasks(
+        &self,
+        chunk_count: usize,
         source_language: &str,
         target_language: &str,
+    ) -> Vec<impl Future<Output = Result<(usize, String, String), String>>> {
+        (0..chunk_count)
+            .map(|index| {
+                let formatter = Formatter::format(index, &self.text_splitter.split_result);
+                let source_lang = source_language.to_string();
+                let target_lang = target_language.to_string();
+                let mut translator = Translator::new();
+
+                async move {
+                    let result = translator
+                        .translate(
+                            &source_lang,
+                            &target_lang,
+                            formatter.tagged_text,
+                            formatter.chunk_to_translate.clone(),
+                        )
+                        .await;
+
+                    match result {
+                        Ok(_) => Ok((
+                            index,
+                            translator.format_translated_result(),
+                            formatter.chunk_to_translate,
+                        )),
+                        Err(e) => Err(e.to_string()),
+                    }
+                }
+            })
+            .collect()
+    }
+
+    async fn execute_translation_tasks(
+        &mut self,
+        tasks: Vec<impl Future<Output = Result<(usize, String, String), String>>>,
+        chunk_count: usize,
+    ) -> Result<Vec<(usize, String, String)>, Box<dyn std::error::Error>> {
+        let mut results = Vec::with_capacity(chunk_count);
+        let stream = futures::stream::iter(tasks).buffer_unordered(10);
+        tokio::pin!(stream);
+
+        while let Some(result) = stream.next().await {
+            let (index, translated_text, chunk_to_translate) = result?;
+            results.push((index, translated_text, chunk_to_translate));
+            self.progress_bar.inc(1);
+        }
+
+        results.sort_by_key(|(index, _, _)| *index);
+        Ok(results)
+    }
+
+    fn combine_translation_results(
+        &mut self,
+        results: Vec<(usize, String, String)>,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        let formatter = Formatter::format(index, &self.text_splitter.split_result);
-        self.translator
-            .translate(
-                source_language,
-                target_language,
-                formatter.tagged_text,
-                formatter.chunk_to_translate.clone(),
-            )
-            .await?;
-        let formatted_result = self.translator.format_translated_result();
+        let mut final_srt_content = String::with_capacity(self.subtitle_entries.len());
 
-        let input = crate::subtitle_combiner::CombineInput {
-            combined_text: formatter.chunk_to_translate,
-            translated_text: formatted_result,
-            time_info: self.subtitle_extractor.time_info.clone(),
-            number_info: self.subtitle_extractor.number_info.clone(),
-        };
+        for (_, translated_text, chunk_to_translate) in results {
+            let input = crate::subtitle_combiner::CombineInput {
+                combined_text: chunk_to_translate,
+                translated_text,
+                time_info: self.subtitle_extractor.time_info.clone(),
+                number_info: self.subtitle_extractor.number_info.clone(),
+            };
 
-        self.subtitle_combiner.combine(input)?;
+            self.subtitle_combiner.combine(input)?;
+            final_srt_content.push_str(&self.subtitle_combiner.get_content());
+        }
 
-        eprintln!(
-            "Translated {} entries",
-            self.subtitle_combiner.get_current_index()
-        );
-
-        let content = self.subtitle_combiner.get_content();
-        eprintln!("Chunk content: {}", content);
-
-        Ok(content.to_string())
+        Ok(final_srt_content)
     }
 }
 pub async fn handle_openai_translate(
@@ -138,5 +172,6 @@ mod test {
         crate::handler::handle_openai_translate(path, "en".to_string(), "zh_CN".to_string())
             .await
             .unwrap();
+        // eprintln!("done");
     }
 }
