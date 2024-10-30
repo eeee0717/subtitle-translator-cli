@@ -6,10 +6,7 @@ use crate::{
     subtitle_extractor::SubtitleExtractor, text_splitter::TextSplitter, translator::Translator,
     writer::Writer, GROUP_SIZE,
 };
-use std::{
-    fmt::Write,
-    path::{self, PathBuf},
-};
+use std::{fmt::Write, path::PathBuf};
 
 #[derive(Debug)]
 pub struct Handler {
@@ -18,33 +15,21 @@ pub struct Handler {
     pub text_splitter: TextSplitter,
     pub translator: Translator,
     pub subtitle_combiner: SubtitleCombiner,
+    pub progress_bar: indicatif::ProgressBar,
 }
 
 impl Handler {
-    pub fn setup(path: PathBuf) -> Self {
-        let subtitle_entries = crate::parse::parse_file(&path).expect("Failed to parse file");
-        let subtitle_extractor =
-            SubtitleExtractor::extractor(&subtitle_entries).expect("Failed to extract subtitle");
-        let text_splitter =
-            TextSplitter::split_text(&subtitle_extractor.text_info).expect("Failed to split text");
-        let translator = Translator::new();
-        let subtitle_combiner = SubtitleCombiner::new();
-        Self {
-            subtitle_entries,
-            subtitle_extractor,
-            text_splitter,
-            translator,
-            subtitle_combiner,
-        }
+    pub fn from_path(path: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
+        let subtitle_entries = crate::parse::parse_file(&path)?;
+        Self::new(subtitle_entries)
     }
-    pub async fn handle_translator(
-        &mut self,
-        source_language: String,
-        target_language: String,
-    ) -> Result<String, Box<dyn std::error::Error>> {
-        let chunk_count = self.subtitle_entries.len() / GROUP_SIZE;
-        let pb = indicatif::ProgressBar::new(chunk_count.try_into().unwrap());
-        pb.set_style(
+
+    pub fn new(subtitle_entries: Vec<SubtitleEntry>) -> Result<Self, Box<dyn std::error::Error>> {
+        let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries)?;
+        let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info)?;
+        let progress_bar =
+            indicatif::ProgressBar::new((subtitle_entries.len() / GROUP_SIZE).try_into().unwrap());
+        progress_bar.set_style(
             ProgressStyle::with_template(
                 "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}]  {pos}/{len} ({eta})",
             )
@@ -54,9 +39,24 @@ impl Handler {
             })
             .progress_chars("#>-"),
         );
-        pb.set_position(0);
+        progress_bar.set_position(0);
+        Ok(Self {
+            subtitle_entries,
+            subtitle_extractor,
+            text_splitter,
+            translator: Translator::new(),
+            subtitle_combiner: SubtitleCombiner::new(),
+            progress_bar,
+        })
+    }
 
+    pub async fn handle_translator(
+        &mut self,
+        source_language: String,
+        target_language: String,
+    ) -> Result<String, Box<dyn std::error::Error>> {
         let mut final_srt_content = String::with_capacity(self.subtitle_entries.len());
+        let chunk_count = self.subtitle_entries.len() / GROUP_SIZE;
 
         for index in 0..chunk_count {
             final_srt_content.push_str(
@@ -64,9 +64,9 @@ impl Handler {
                     .process_chunk(index, &source_language, &target_language)
                     .await?,
             );
-            pb.inc(1);
+            self.progress_bar.inc(1);
         }
-        pb.finish_with_message("done");
+        self.progress_bar.finish_with_message("done");
 
         Ok(final_srt_content)
     }
@@ -111,17 +111,22 @@ pub async fn handle_openai_translate(
     path: PathBuf,
     source_language: String,
     target_language: String,
-) {
-    let mut handler = Handler::setup(path.clone());
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut handler = Handler::from_path(path.clone())?;
     let final_srt_content = handler
         .handle_translator(source_language, target_language.clone())
-        .await
-        .expect("Failed to handle translator");
-    eprintln!("Final srt content:\n{}", final_srt_content);
-    // get file name without extension
-    let file_name = path.file_stem().unwrap().to_str().unwrap();
-    let path = path.with_file_name(format!("{}_{}.srt", file_name, target_language));
-    Writer::write_file(final_srt_content, path);
+        .await?;
+
+    let output_path = generate_output_path(&path, &target_language);
+    Writer::write_file(final_srt_content, output_path)?;
+    Ok(())
+}
+fn generate_output_path(input_path: &PathBuf, target_language: &str) -> PathBuf {
+    let file_name = input_path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("output");
+    input_path.with_file_name(format!("{}_{}.srt", file_name, target_language))
 }
 
 #[cfg(test)]
@@ -130,6 +135,8 @@ mod test {
     async fn test_handle() {
         let path = std::path::PathBuf::from("test2.srt");
 
-        crate::handler::handle_openai_translate(path, "en".to_string(), "zh_CN".to_string()).await;
+        crate::handler::handle_openai_translate(path, "en".to_string(), "zh_CN".to_string())
+            .await
+            .unwrap();
     }
 }
