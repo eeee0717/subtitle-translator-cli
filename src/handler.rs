@@ -9,14 +9,12 @@ use crate::{
 };
 use std::{fmt::Write, future::Future, path::PathBuf};
 
-#[derive(Debug)]
 pub struct Handler {
-    pub subtitle_entries: Vec<SubtitleEntry>,
-    pub subtitle_extractor: SubtitleExtractor,
-    pub text_splitter: TextSplitter,
-    pub translator: Translator,
-    pub subtitle_combiner: SubtitleCombiner,
-    pub progress_bar: indicatif::ProgressBar,
+    subtitle_entries: Vec<SubtitleEntry>,
+    subtitle_extractor: SubtitleExtractor,
+    text_splitter: TextSplitter,
+    subtitle_combiner: SubtitleCombiner,
+    progress_bar: indicatif::ProgressBar,
 }
 
 impl Handler {
@@ -45,7 +43,6 @@ impl Handler {
             subtitle_entries,
             subtitle_extractor,
             text_splitter,
-            translator: Translator::new(),
             subtitle_combiner: SubtitleCombiner::new(),
             progress_bar,
         })
@@ -172,6 +169,6 @@ mod test {
         crate::handler::handle_openai_translate(path, "en".to_string(), "zh_CN".to_string())
             .await
             .unwrap();
-        // eprintln!("done");
+        eprintln!("done");
     }
 }
