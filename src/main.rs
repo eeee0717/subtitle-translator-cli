@@ -1,9 +1,6 @@
-#[macro_use]
-extern crate lazy_static;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use subtitle_translator_cli::handler::handle_openai_translate;
-use tera::Tera;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -13,7 +10,6 @@ struct Args {
 }
 
 #[derive(Subcommand, Debug)]
-#[clap(rename_all = "snake_case")]
 enum Command {
     OpenAI {
         #[arg(short)]
@@ -23,18 +19,6 @@ enum Command {
         #[arg(short)]
         target_language: String,
     },
-}
-lazy_static! {
-    pub static ref TEMPLATES: Tera = {
-        let tera = match Tera::new("templates/*") {
-            Ok(t) => t,
-            Err(e) => {
-                println!("Parsing error(s): {}", e);
-                ::std::process::exit(1);
-            }
-        };
-        tera
-    };
 }
 
 #[tokio::main]
