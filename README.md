@@ -13,5 +13,8 @@ cp .env.cp .env
 stc open-ai -s <SOURCE_LANGUAGE> -t <TARGET_LANGUAGE> -p <PATH>
 ```
 
-![Demo](./img/demo.mp4)
+<video width="auto" height="auto" controls>
+    <source src="./img/demo.mp4" type="video/mp4">
+</video>
+
 > Note: The Claude-sonnet-3.5 model demonstrates superior translation performance compared to GPT-4o-mini.
