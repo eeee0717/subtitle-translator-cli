@@ -9,28 +9,22 @@ use async_openai::{
 
 #[derive(Debug)]
 pub struct OpenAI {
-    pub api_key: String,
-    pub api_base: String,
-    pub model: String,
-    pub client: Client<OpenAIConfig>,
+    model: String,
+    client: Client<OpenAIConfig>,
 }
 impl OpenAI {
     pub fn new() -> Self {
         let api_key = dotenv!("API_KEY").to_string();
         let api_base = dotenv!("API_BASE").to_string();
         let model = dotenv!("MODEL").to_string();
-        eprintln!("API_KEY: {}", api_key);
-        eprintln!("API_BASE: {}", api_base);
+        // eprintln!("API_KEY: {}", api_key);
+        // eprintln!("API_BASE: {}", api_base);
+
         let config = OpenAIConfig::new()
             .with_api_key(&api_key)
             .with_api_base(&api_base);
         let client = Client::with_config(config);
-        Self {
-            api_key,
-            api_base,
-            model,
-            client,
-        }
+        Self { model, client }
     }
     pub async fn chat(
         &self,
@@ -59,8 +53,8 @@ impl OpenAI {
             .expect("No Content Found"))
     }
 }
+#[cfg(test)]
 mod test {
-
     #[tokio::test]
     pub async fn test() -> Result<(), Box<dyn std::error::Error>> {
         let openai = super::OpenAI::new();
