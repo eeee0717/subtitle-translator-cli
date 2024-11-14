@@ -1,7 +1,11 @@
-#[macro_use]
-extern crate dotenv_codegen;
+use std::sync::Mutex;
+
+use config::Config;
+use once_cell::sync::Lazy;
+
 #[macro_use]
 extern crate lazy_static;
+pub mod config;
 pub mod formatter;
 pub mod handler;
 pub mod mock;
@@ -13,6 +17,10 @@ pub mod text_splitter;
 pub mod translator;
 pub mod writer;
 const GROUP_SIZE: usize = 5;
+static CONFIG: Lazy<Mutex<Config>> = Lazy::new(|| {
+    let config = Config::read_config_from_file("config.json").expect("Failed to read config");
+    Mutex::new(config)
+});
 lazy_static! {
     pub static ref TEMPLATES: tera::Tera = {
         let tera = match tera::Tera::new("src/templates/*") {

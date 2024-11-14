@@ -7,6 +7,8 @@ use async_openai::{
     Client,
 };
 
+use crate::CONFIG;
+
 #[derive(Debug)]
 pub struct OpenAI {
     model: String,
@@ -14,9 +16,11 @@ pub struct OpenAI {
 }
 impl OpenAI {
     pub fn new() -> Self {
-        let api_key = dotenv!("API_KEY").to_string();
-        let api_base = dotenv!("API_BASE").to_string();
-        let model = dotenv!("MODEL").to_string();
+        // 使用锁来访问全局配置
+        let config = CONFIG.lock().unwrap();
+        let api_key = config.api_key.clone();
+        let api_base = config.api_base.clone();
+        let model = config.model.clone();
         // eprintln!("API_KEY: {}", api_key);
         // eprintln!("API_BASE: {}", api_base);
 
