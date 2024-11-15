@@ -167,7 +167,7 @@ fn generate_output_path(input_path: &PathBuf, target_language: &str) -> PathBuf 
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("output");
-    input_path.with_file_name(format!("{}_{}.srt", file_name, target_language))
+    input_path.with_file_name(format!("{}.{}.srt", file_name, target_language))
 }
 
 #[cfg(test)]

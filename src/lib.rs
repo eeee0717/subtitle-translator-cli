@@ -18,12 +18,12 @@ pub mod writer;
 /// global constants
 const GROUP_SIZE: usize = 10;
 static CONFIG: Lazy<Mutex<Config>> = Lazy::new(|| {
-    let config = Config::read_config_from_file("config.json").expect("Failed to read config");
+    let config = Config::read_config_from_file("./config.json").expect("Failed to read config");
     Mutex::new(config)
 });
 lazy_static! {
     pub static ref TEMPLATES: tera::Tera = {
-        let tera = match tera::Tera::new("src/templates/*") {
+        let tera = match tera::Tera::new("./templates/*") {
             Ok(t) => t,
             Err(e) => {
                 println!("Parsing error(s): {}", e);
