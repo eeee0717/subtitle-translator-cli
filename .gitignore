@@ -3,5 +3,6 @@
 *.srt
 .env
 *.txt
-config.json
+*.json
 *.mp4
+*.zip

@@ -1,7 +1,6 @@
-use std::sync::Mutex;
-
 use config::Config;
 use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 #[macro_use]
 extern crate lazy_static;
