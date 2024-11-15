@@ -12,7 +12,7 @@ pub struct Config {
 impl Config {
     pub fn init() -> Result<(), Box<dyn Error>> {
         if !Path::new("./config.json").exists() {
-            println!("current dir: {:?}", std::env::current_dir());
+            eprintln!("current dir: {:?}", std::env::current_dir());
             return Err("配置文件 config.json 不存在".into());
         }
         // 尝试读取配置文件来验证其内容
