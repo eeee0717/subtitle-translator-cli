@@ -26,8 +26,11 @@ impl Handler {
     pub fn new(subtitle_entries: Vec<SubtitleEntry>) -> Result<Self, Box<dyn std::error::Error>> {
         let subtitle_extractor = SubtitleExtractor::extractor(&subtitle_entries)?;
         let text_splitter = TextSplitter::split_text(&subtitle_extractor.text_info)?;
-        let progress_bar =
-            indicatif::ProgressBar::new((subtitle_entries.len() / GROUP_SIZE).try_into().unwrap());
+        let progress_bar = indicatif::ProgressBar::new(
+            ((subtitle_entries.len() + GROUP_SIZE - 1) / GROUP_SIZE)
+                .try_into()
+                .unwrap(),
+        );
         progress_bar.set_style(
             ProgressStyle::with_template(
                 "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}]  {pos}/{len} ({eta})",
@@ -53,7 +56,9 @@ impl Handler {
         source_language: String,
         target_language: String,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        let chunk_count = self.subtitle_entries.len() / GROUP_SIZE;
+        // 如果不被GROUP_SIZE整除，则向上取整
+        let chunk_count = (self.subtitle_entries.len() + GROUP_SIZE - 1) / GROUP_SIZE;
+        eprintln!("chunk_count: {}", chunk_count);
         let tasks = self.create_translation_tasks(chunk_count, &source_language, &target_language);
         let results = self
             .execute_translation_tasks(tasks, chunk_count)

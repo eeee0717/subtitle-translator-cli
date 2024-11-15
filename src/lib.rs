@@ -17,7 +17,7 @@ pub mod text_splitter;
 pub mod translator;
 pub mod writer;
 /// global constants
-const GROUP_SIZE: usize = 5;
+const GROUP_SIZE: usize = 10;
 static CONFIG: Lazy<Mutex<Config>> = Lazy::new(|| {
     let config = Config::read_config_from_file("config.json").expect("Failed to read config");
     Mutex::new(config)
