@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
-use std::{error::Error, path::PathBuf};
+use std::path::PathBuf;
 use subtitle_translator_cli::handler::handle_openai_translate;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -10,7 +11,7 @@ struct Args {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    OpenAI {
+    Openai {
         #[arg(short)]
         path: PathBuf,
         #[arg(short)]
@@ -21,10 +22,10 @@ enum Command {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() {
     let args = Args::parse();
     match args.command {
-        Command::OpenAI {
+        Command::Openai {
             path,
             source_language,
             target_language,
@@ -32,5 +33,4 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .await
             .expect("Failed to handle OpenAI translation"),
     }
-    Ok(())
 }

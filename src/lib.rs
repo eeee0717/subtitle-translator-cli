@@ -16,6 +16,7 @@ pub mod subtitle_extractor;
 pub mod text_splitter;
 pub mod translator;
 pub mod writer;
+/// global constants
 const GROUP_SIZE: usize = 5;
 static CONFIG: Lazy<Mutex<Config>> = Lazy::new(|| {
     let config = Config::read_config_from_file("config.json").expect("Failed to read config");
@@ -36,6 +37,8 @@ lazy_static! {
 
 #[cfg(test)]
 mod test {
+    use crate::CONFIG;
+
     #[test]
     fn test_tera() {
         let mut context = tera::Context::new();
@@ -76,5 +79,11 @@ mod test {
         }
         pb.finish_with_message("done");
         assert!(true);
+    }
+    #[test]
+    fn test_config() {
+        let config = CONFIG.lock().unwrap();
+        println!("{:?}", config);
+        assert!(!config.api_key.is_empty());
     }
 }
