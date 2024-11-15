@@ -56,9 +56,9 @@ impl Handler {
         source_language: String,
         target_language: String,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        // 如果不被GROUP_SIZE整除，则向上取整
+        // if the length of subtitle_entries is not divisible by GROUP_SIZE, then round up
         let chunk_count = (self.subtitle_entries.len() + GROUP_SIZE - 1) / GROUP_SIZE;
-        eprintln!("chunk_count: {}", chunk_count);
+
         let tasks = self.create_translation_tasks(chunk_count, &source_language, &target_language);
         let results = self
             .execute_translation_tasks(tasks, chunk_count)
@@ -106,6 +106,7 @@ impl Handler {
             .collect()
     }
 
+    /// use multiple tasks to translate the text
     async fn execute_translation_tasks(
         &mut self,
         tasks: Vec<impl Future<Output = Result<(usize, String, String), String>>>,
@@ -152,6 +153,7 @@ pub async fn handle_openai_translate(
     target_language: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut handler = Handler::from_path(path.clone())?;
+
     let final_srt_content = handler
         .handle_translator(source_language, target_language.clone())
         .await?;
