@@ -55,7 +55,10 @@ impl Handler {
     ) -> Result<String, Box<dyn std::error::Error>> {
         let chunk_count = self.subtitle_entries.len() / GROUP_SIZE;
         let tasks = self.create_translation_tasks(chunk_count, &source_language, &target_language);
-        let results = self.execute_translation_tasks(tasks, chunk_count).await?;
+        let results = self
+            .execute_translation_tasks(tasks, chunk_count)
+            .await
+            .expect("Failed to execute translation tasks");
         let final_srt_content = self.combine_translation_results(results)?;
 
         self.progress_bar.finish_with_message("done");
@@ -164,7 +167,7 @@ fn generate_output_path(input_path: &PathBuf, target_language: &str) -> PathBuf 
 mod test {
     #[tokio::test]
     async fn test_handle() {
-        let path = std::path::PathBuf::from("test2.srt");
+        let path = std::path::PathBuf::from("example/WOLFS.en.srt");
 
         crate::handler::handle_openai_translate(path, "en".to_string(), "zh_CN".to_string())
             .await

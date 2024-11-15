@@ -44,26 +44,23 @@ impl SubtitleCombiner {
     }
 
     /// 合并字幕内容
+    ///
+    /// combined_text: 原文
+    /// translated_text: 翻译后的文本
     pub fn combine(&mut self, input: CombineInput) -> Result<(), SubtitleError> {
-        let text_lines: Vec<&str> = input.combined_text.split("<T>").collect();
-        let result_lines: Vec<&str> = input.translated_text.split("<T>").collect();
+        println!("input\n{:?}", input);
+        let combined_text: Vec<&str> = input.combined_text.split("<T>").collect();
+        let translated_text: Vec<&str> = input.translated_text.split("<T>").collect();
 
-        // 验证输入
-        if text_lines.len() != result_lines.len() {
-            eprintln!("input: {:?}", input);
-            eprintln!("text_lines: {:?}", text_lines);
-            eprintln!("result_lines: {:?}", result_lines);
+        let mut combined_lines = Vec::with_capacity(combined_text.len() * 5);
 
-            return Err(SubtitleError::InvalidInput(
-                "Text lines and result lines count mismatch".to_string(),
-            ));
-        }
-
-        let mut combined_lines = Vec::with_capacity(text_lines.len() * 5);
-
-        for (index, (result_line, text_line)) in
-            result_lines.iter().zip(text_lines.iter()).enumerate()
+        for (index, (translated_line, combined_line)) in
+            translated_text.iter().zip(combined_text.iter()).enumerate()
         {
+            println!(
+                "index: {}, translated_line: {}, combined_line: {}",
+                index, translated_line, combined_line
+            );
             let current_pos = self.current_index + index;
 
             if current_pos >= input.number_info.len() || current_pos >= input.time_info.len() {
@@ -72,17 +69,27 @@ impl SubtitleCombiner {
                 ));
             }
 
-            combined_lines.extend([
+            let mut entry = vec![
                 input.number_info[current_pos].clone(),
                 input.time_info[current_pos].clone(),
-                result_line.to_string(),
-                text_line.to_string(),
-                String::new(),
-            ]);
+            ];
+            // 如果文本行和结果行数量不匹配，则不合并翻译后的文本
+            if combined_text.len() != translated_text.len() {
+                eprintln!(
+                    "Combined text and translated text length mismatch, {}, {}",
+                    translated_text.len(),
+                    combined_text.len()
+                );
+                entry.push(combined_line.to_string());
+            } else {
+                entry.extend([translated_line.to_string(), combined_line.to_string()]);
+            }
+            entry.push(String::new());
+            combined_lines.extend(entry);
         }
 
         self.srt_content = combined_lines.join("\n").replace("<nl>", "\n");
-        self.current_index += result_lines.len();
+        self.current_index += translated_text.len();
         Ok(())
     }
 }
